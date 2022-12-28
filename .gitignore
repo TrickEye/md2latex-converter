@@ -1,0 +1,5 @@
+build/*
+
+md2latex_converter.egg-info/*
+
+.idea/*
