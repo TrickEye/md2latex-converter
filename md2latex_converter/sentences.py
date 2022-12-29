@@ -6,8 +6,8 @@ class Sentence:
     identifier: str
     content: str
 
-    def __init__(self, line, identifier, content):
-        self.line = line
+    def __init__(self, index, identifier, content):
+        self.line = index + 1
         self.identifier = identifier
         self.content = content
 

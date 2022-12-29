@@ -27,3 +27,12 @@ class FilenameError(LocaleWarning):
 
     def handle(self):
         print(f'Warning. The given filename \'{self.filename}\' does not seem to be a markdown file.')
+
+
+class ParseError(LocaleError):
+    def __init__(self, symbol_name):
+        self.symbol_name = symbol_name
+
+    def handle(self):
+        print(f'Fatal error! An error occurred while parsing {self.symbol_name}')
+        sys.exit(1)

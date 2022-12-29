@@ -1,7 +1,35 @@
+
+
 from md2latex_converter.sentences import *
 
 
-def lex(input_string: str) -> [str]:
+def lex(input_string: str):
+    """
+    A general lexer for each line of the source .md file.
+
+    It identifies and classifies the types of each line, converting
+    them into a specific child class of the overall super class
+    [md2latex_converter.sentences.Sentence]
+
+    The lexer is based on regex. The classification rules for this project
+    is listed as follows:
+
+        [sentence.Title]:
+            r'^(#){1,6}\s*(.*)$'
+        [sentence.EmptySentence]:
+            r'^\s*$'
+        [sentence.UnorderedList]；
+            r'^(\s*)[*-]\s+(.*)$'
+        [sentence.OrderedList]:
+            r'^(\s*)\d+\.\s+(.*)$'
+        [sentence.Eof]:
+            r'^\x00$'
+        [sentence.Text]:
+            r'^.*$'
+
+    For each line from the input, the lexer will seek the first match in the
+    regexes above.
+    """
     ret = []
     input_strings = input_string.split('\n')
     for _ in range(len(input_strings)):

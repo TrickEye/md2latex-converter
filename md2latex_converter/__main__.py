@@ -1,5 +1,6 @@
 from md2latex_converter import inputhandler, regexlexer
 from md2latex_converter.error import *
+from md2latex_converter.parser import Parser
 
 
 def main(defaultfilename: str = None) -> None:
@@ -11,8 +12,12 @@ def main(defaultfilename: str = None) -> None:
 
     sentence_list = regexlexer.lex(file_string)
 
-    for _ in sentence_list:
-        print(_)
+    # for _ in sentence_list:
+    #     print(_)
+
+    document = Parser(sentence_list).parse()
+
+    print('Done')
 
 
 def getfilename(defaultfilename: str) -> str:
