@@ -32,7 +32,7 @@ class Parser:
 
     def next(self):
         self.index += 1
-        self.__peek_token = self.sentences[self.index] if self.index < self.length else Eof(-1)
+        self.__peek_token = self.sentences[self.index] if self.index < self.length else sentences.Eof(-1)
         return self.__peek_token
 
     def parse(self):
@@ -44,11 +44,14 @@ class NonTerminatingSymbol:
     def parse(parser: Parser):
         pass
 
+    def toLaTeX(self):
+        pass
+
 
 class Document(NonTerminatingSymbol):
     __symbol_name = 'Document'
 
-    def __init__(self, components):
+    def __init__(self, components: ['Component']):
         self.components = components
 
     @staticmethod
@@ -62,12 +65,29 @@ class Document(NonTerminatingSymbol):
             raise ParseError(Document.__symbol_name)
         return Document(components)
 
+    def toLaTeX(self):
+        document_class = '\\documentclass{ctexart}'
+
+        title_string = 'Your title for the article!'
+        for component in self.components:
+            if isinstance(component, Title) and component.title.hierarchy == 1:
+                title_string = component.title.title_name
+        title_decl = '\\title{' + title_string + '}'
+
+        document_begin = '\\begin{document}'
+
+        components_latex = []
+        for component in self.components:
+            if (temp := component.toLaTeX()) is not None:
+                components_latex.append(temp)
+
+        document_end = '\\end{document}'
+
+        return '\n'.join([document_class, title_decl, document_begin, *components_latex, document_end])
+
 
 class Component(NonTerminatingSymbol):
     __symbol_name = 'Component'
-
-    def __init__(self, component: 'Component'):
-        self.whoami = component
 
     @staticmethod
     def parse(parser: Parser):
@@ -83,11 +103,23 @@ class Component(NonTerminatingSymbol):
             parser.next()
             return None
 
+    def toLaTeX(self):
+        pass
+
 
 class Title(NonTerminatingSymbol):
     __symbol_name = 'Title'
+    labels = [
+        '',
+        '',
+        'section',
+        'subsection',
+        'subsubsection',
+        'subsubsection',
+        'subsubsection',
+    ]
 
-    def __init__(self, title):
+    def __init__(self, title: sentences.Title):
         self.title = title
 
     @staticmethod
@@ -99,11 +131,18 @@ class Title(NonTerminatingSymbol):
             parser.next()
             return Title(title)
 
+    def toLaTeX(self):
+        if self.title.hierarchy == 1:
+            return None
+        else:
+            label = Title.labels[self.title.hierarchy]
+            return '\\' + label + '{' + self.title.title_name + '}'
+
 
 class PlainText(NonTerminatingSymbol):
     __symbol_name = 'PlainText'
 
-    def __init__(self, texts):
+    def __init__(self, texts: [sentences.Text]):
         self.texts = texts
 
     @staticmethod
@@ -120,11 +159,14 @@ class PlainText(NonTerminatingSymbol):
             parser.next()
         return PlainText(texts)
 
+    def toLaTeX(self):
+        return '\n'.join([text.content for text in self.texts])
+
 
 class UnorderedList(NonTerminatingSymbol):
     __symbol_name = 'UnorderedList'
 
-    def __init__(self, listitems):
+    def __init__(self, listitems: [sentences.UnorderedList]):
         self.listitems = listitems
 
     @staticmethod
@@ -138,6 +180,9 @@ class UnorderedList(NonTerminatingSymbol):
         if not isinstance(parser.peek(), sentences.EmptySentence):
             raise ParseError(UnorderedList.__symbol_name)
         return UnorderedList(listitems)
+
+    def toLaTeX(self):
+        return '\n'.join([listitem.main_content for listitem in self.listitems])
 
 
 class OrderedList(NonTerminatingSymbol):
@@ -157,3 +202,6 @@ class OrderedList(NonTerminatingSymbol):
         if not isinstance(parser.peek(), sentences.EmptySentence):
             raise ParseError(OrderedList.__symbol_name)
         return OrderedList(listitems)
+
+    def toLaTeX(self):
+        return '\n'.join([listitem.main_content for listitem in self.listitems])

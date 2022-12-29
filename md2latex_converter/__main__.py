@@ -12,12 +12,14 @@ def main(defaultfilename: str = None) -> None:
 
     sentence_list = regexlexer.lex(file_string)
 
-    # for _ in sentence_list:
-    #     print(_)
-
     document = Parser(sentence_list).parse()
 
-    print('Done')
+    latex = document.toLaTeX()
+
+    with open('output.tex', 'w', encoding='utf-8') as f:
+        f.write(latex)
+
+    print('Done!')
 
 
 def getfilename(defaultfilename: str) -> str:
@@ -33,6 +35,4 @@ def getfilename(defaultfilename: str) -> str:
 
 
 if __name__ == "__main__":
-    # print(os.listdir())
-    # print(os.path.abspath('filename.md'))
     main('testfile.md')

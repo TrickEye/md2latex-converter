@@ -16,11 +16,12 @@ class Sentence:
 
 
 class Title(Sentence):
-    hierarchy: int
 
     def __init__(self, line, content):
         super().__init__(line, 'Title', content)
         self.hierarchy = len(re.match(r'(#+)', content).group())
+        self.title_name = re.match(r'#+\s+(.*)$', content).group(1)
+        # print('titlename is ' + self.title_name)
 
 
 class Text(Sentence):

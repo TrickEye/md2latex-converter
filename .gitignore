@@ -5,3 +5,5 @@ md2latex_converter.egg-info/*
 .idea/*
 
 testfile.md
+
+/output.tex
