@@ -1,6 +1,6 @@
 import setuptools
 
-VERSION = "0.0.1"
+VERSION = "0.0.2.1"
 
 setuptools.setup(
     name="md2latex_converter",

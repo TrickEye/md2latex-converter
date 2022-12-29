@@ -76,6 +76,8 @@ class Document(NonTerminatingSymbol):
 
         document_begin = '\\begin{document}'
 
+        maketitle = '\\maketitle'
+
         components_latex = []
         for component in self.components:
             if (temp := component.toLaTeX()) is not None:
@@ -83,7 +85,7 @@ class Document(NonTerminatingSymbol):
 
         document_end = '\\end{document}'
 
-        return '\n'.join([document_class, title_decl, document_begin, *components_latex, document_end])
+        return '\n'.join([document_class, title_decl, document_begin, maketitle, *components_latex, document_end])
 
 
 class Component(NonTerminatingSymbol):
