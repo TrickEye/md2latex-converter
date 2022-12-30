@@ -35,13 +35,17 @@ class EmptySentence(Sentence):
 
 
 class UnorderedList(Sentence):
-    hierarchy: int
-    main_content: str
 
     def __init__(self, line, content):
         super().__init__(line, 'UnorderedList', content)
         match = re.match(r'(\s*)[*-]\s+(.*)', content)
-        self.hierarchy = len(match.group(1))
+
+        whitespace = match.group(1)
+        whitespace_span = 0
+        for _ in whitespace:
+            whitespace_span += 4 if _ == '\t' else 1
+
+        self.whitespace_span = whitespace_span
         self.main_content = match.group(2)
 
 
@@ -52,7 +56,13 @@ class OrderedList(Sentence):
     def __init__(self, line, content):
         super().__init__(line, 'OrderedList', content)
         match = re.match(r'(\s*)\d+\.\s+(.*)', content)
-        self.hierarchy = len(match.group(1))
+
+        whitespace = match.group(1)
+        whitespace_span = 0
+        for _ in whitespace:
+            whitespace_span += 4 if _ == '\t' else 1
+
+        self.whitespace_span = whitespace_span
         self.main_content = match.group(2)
 
 

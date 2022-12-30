@@ -1,5 +1,7 @@
 import sys
 
+from md2latex_converter import sentences
+
 
 class LocaleError(BaseException):
     def handle(self):
@@ -21,7 +23,7 @@ class FileNFError(LocaleError):
         sys.exit('Fatal error! Please see above for more information.')
 
 
-class FilenameError(LocaleWarning):
+class FilenameWarning(LocaleWarning):
     def __init__(self, filename):
         self.filename = filename
 
@@ -36,3 +38,11 @@ class ParseError(LocaleError):
     def handle(self):
         print(f'Fatal error! An error occurred while parsing {self.symbol_name}')
         sys.exit(1)
+
+
+class ListHierarchyWarning(LocaleWarning):
+    def __init__(self, error_sentence: sentences.UnorderedList | sentences.OrderedList):
+        self.error_sentence = error_sentence
+
+    def handle(self):
+        print(f"Warning. The hierarchy of the list don't seem to make sense in line {self.error_sentence.line}")

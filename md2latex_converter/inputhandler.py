@@ -2,7 +2,7 @@ import os
 import os.path
 
 from md2latex_converter.error import FileNFError
-from md2latex_converter.error import FilenameError
+from md2latex_converter.error import FilenameWarning
 
 
 def readfile(filename: str) -> str:
@@ -10,7 +10,7 @@ def readfile(filename: str) -> str:
     if not os.path.isfile(filename):
         raise FileNFError(filename)
     elif not filename.endswith('.md'):
-        raise FilenameError(filename)
+        raise FilenameWarning(filename)
 
     with open(filename, 'r', encoding='utf-8') as f:
         return f.read()
@@ -21,7 +21,7 @@ def getfileString(filename: str) -> str:
         file = readfile(filename)
     except FileNFError as e:
         e.handle()
-    except FilenameError as e:
+    except FilenameWarning as e:
         e.handle()
     else:
-        return file + '\0'
+        return file + '\n\n\n\0'

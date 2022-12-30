@@ -15,7 +15,7 @@ Markdown Grammar used in this project is listed as follows:
     OrderedList:
         [sentence.orderedList]* [sentence.emptySentence]+
 """
-from md2latex_converter.error import ParseError
+from md2latex_converter.error import ParseError, ListHierarchyWarning
 from md2latex_converter import sentences
 
 
@@ -81,11 +81,13 @@ class Document(NonTerminatingSymbol):
         components_latex = []
         for component in self.components:
             if (temp := component.toLaTeX()) is not None:
-                components_latex.append(temp)
+                for _ in temp:
+                    components_latex.append(_)
+                components_latex.append('\n')
 
         document_end = '\\end{document}'
 
-        return '\n'.join([document_class, title_decl, document_begin, maketitle, *components_latex, document_end])
+        return [document_class, title_decl, document_begin, maketitle, *components_latex, document_end]
 
 
 class Component(NonTerminatingSymbol):
@@ -138,7 +140,7 @@ class Title(NonTerminatingSymbol):
             return None
         else:
             label = Title.labels[self.title.hierarchy]
-            return '\\' + label + '{' + self.title.title_name + '}'
+            return ['\\' + label + '{' + self.title.title_name + '}']
 
 
 class PlainText(NonTerminatingSymbol):
@@ -162,7 +164,7 @@ class PlainText(NonTerminatingSymbol):
         return PlainText(texts)
 
     def toLaTeX(self):
-        return '\n'.join([text.content for text in self.texts])
+        return [text.content for text in self.texts]
 
 
 class UnorderedList(NonTerminatingSymbol):
@@ -184,7 +186,31 @@ class UnorderedList(NonTerminatingSymbol):
         return UnorderedList(listitems)
 
     def toLaTeX(self):
-        return '\n'.join([listitem.main_content for listitem in self.listitems])
+        spans = set([_.whitespace_span for _ in self.listitems])
+        spans = list(spans)
+        spans.sort()
+        hierarchies = [spans.index(_.whitespace_span) for _ in self.listitems]
+
+        ret = ['\\begin{itemize}']
+        cur = [0]
+        for _ in range(len(self.listitems)):
+            if cur[-1] == hierarchies[_]:
+                ret.append('\\item ' + self.listitems[_].main_content)
+            elif cur[-1] < hierarchies[_]:
+                ret.append('\\begin{itemize}')
+                ret.append('\\item ' + self.listitems[_].main_content)
+                cur.append(hierarchies[_])
+            elif cur[-1] > hierarchies[_]:
+                while cur[-1] > hierarchies[_]:
+                    cur.pop()
+                    ret.append('\\end{itemize}')
+                ret.append('\\item ' + self.listitems[_].main_content)
+        while cur[-1] > 0:
+            cur.pop()
+            ret.append('\\end{itemize}')
+        ret.append('\\end{itemize}')
+
+        return ret
 
 
 class OrderedList(NonTerminatingSymbol):
@@ -206,4 +232,28 @@ class OrderedList(NonTerminatingSymbol):
         return OrderedList(listitems)
 
     def toLaTeX(self):
-        return '\n'.join([listitem.main_content for listitem in self.listitems])
+        spans = set([_.whitespace_span for _ in self.listitems])
+        spans = list(spans)
+        spans.sort()
+        hierarchies = [spans.index(_.whitespace_span) for _ in self.listitems]
+
+        ret = ['\\begin{enumerate}']
+        cur = [0]
+        for _ in range(len(self.listitems)):
+            if cur[-1] == hierarchies[_]:
+                ret.append('\\item ' + self.listitems[_].main_content)
+            elif cur[-1] < hierarchies[_]:
+                ret.append('\\begin{enumerate}')
+                ret.append('\\item ' + self.listitems[_].main_content)
+                cur.append(hierarchies[_])
+            elif cur[-1] > hierarchies[_]:
+                while cur[-1] > hierarchies[_]:
+                    cur.pop()
+                    ret.append('\\end{enumerate}')
+                ret.append('\\item ' + self.listitems[_].main_content)
+        while cur[-1] > 0:
+            cur.pop()
+            ret.append('\\end{enumerate}')
+        ret.append('\\end{enumerate}')
+
+        return ret
