@@ -1,6 +1,19 @@
 import setuptools
 
-VERSION = "0.0.2.1"
+"""
+build command:
+    `python setup.py sdist bdist_wheel`
+upload command (using twine):
+    `twine upload dist/*`
+"""
+
+VERSION = "0.0.2.2"
+
+with open('LICENSE.txt', 'r', encoding='utf-8') as f:
+    LICENSE = f.read()
+
+with open('README.md', 'r', encoding='utf-8') as f:
+    LONG_DESCRIPTION = f.read()
 
 setuptools.setup(
     name="md2latex_converter",
@@ -11,5 +24,8 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     entry_points={
         'console_scripts': ['m2l = md2latex_converter.__main__:main', ]
-    }
+    },
+    license=LICENSE,
+    long_description=LONG_DESCRIPTION,
+    long_description_content_type='text/markdown'
 )

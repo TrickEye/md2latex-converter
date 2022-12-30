@@ -7,3 +7,5 @@ md2latex_converter.egg-info/*
 testfile.md
 
 /output.tex
+
+/dist/*
