@@ -21,7 +21,6 @@ class Title(Sentence):
         super().__init__(line, 'Title', content)
         self.hierarchy = len(re.match(r'(#+)', content).group())
         self.title_name = re.match(r'#+\s+(.*)$', content).group(1)
-        # print('titlename is ' + self.title_name)
 
 
 class Text(Sentence):
@@ -69,3 +68,11 @@ class OrderedList(Sentence):
 class Eof(Sentence):
     def __init__(self, line):
         super().__init__(line, 'EOF', '\\0')
+
+
+class Picture(Sentence):
+    def __init__(self, line, content):
+        super().__init__(line, 'Picture', content)
+        match = re.match('!\[(.*)]\((.*)\)', content)
+        self.alt_text = match.group(1)
+        self.path_to_pic = match.group(2)

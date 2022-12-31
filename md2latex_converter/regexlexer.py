@@ -1,4 +1,4 @@
-
+import re
 
 from md2latex_converter.sentences import *
 
@@ -26,6 +26,7 @@ def lex(input_string: str):
             r'^\x00$'
         [sentence.Text]:
             r'^.*$'
+        [sentence.Picture]
 
     For each line from the input, the lexer will seek the first match in the
     regexes above.
@@ -44,6 +45,8 @@ def lex(input_string: str):
             ret.append(OrderedList(_, sentence))
         elif re.match(r'^\x00$', sentence) is not None:
             ret.append(Eof(_))
+        elif re.match(r'^!\[(.*)]\((.+)\)', sentence) is not None:
+            ret.append(Picture(_, sentence))
         elif re.match(r'^.*$', sentence) is not None:
             ret.append(Text(_, sentence))
     return ret

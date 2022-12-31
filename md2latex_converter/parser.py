@@ -14,6 +14,8 @@ Markdown Grammar used in this project is listed as follows:
         [sentence.unorderedList]* [sentence.emptySentence]+
     OrderedList:
         [sentence.orderedList]* [sentence.emptySentence]+
+    PictureImportation:
+        [sentence.orderedList] [sentence.emptySentence]+
 """
 from md2latex_converter.error import ParseError, ListHierarchyWarning
 from md2latex_converter import sentences
@@ -67,11 +69,20 @@ class Document(NonTerminatingSymbol):
 
     def toLaTeX(self):
         document_class = '\\documentclass{ctexart}'
+        #
+        # title_string = 'Your title for the article!'
+        # for component in self.components:
+        #     if isinstance(component, Title) and component.title.hierarchy == 1:
+        #         title_string = component.title.title_name
 
-        title_string = 'Your title for the article!'
-        for component in self.components:
-            if isinstance(component, Title) and component.title.hierarchy == 1:
-                title_string = component.title.title_name
+        used_packages = [
+            r'\usepackage{graphicx}'
+        ]
+
+        title_string = title_candidates[0].title.title_name \
+            if len(title_candidates := list(filter(lambda c: isinstance(c, Title) and c.title.hierarchy == 1, self.components))) == 1 \
+            else 'Your title for the article!'
+
         title_decl = '\\title{' + title_string + '}'
 
         document_begin = '\\begin{document}'
@@ -87,7 +98,7 @@ class Document(NonTerminatingSymbol):
 
         document_end = '\\end{document}'
 
-        return [document_class, title_decl, document_begin, maketitle, *components_latex, document_end]
+        return [document_class, *used_packages, title_decl, document_begin, maketitle, *components_latex, document_end]
 
 
 class Component(NonTerminatingSymbol):
@@ -106,6 +117,8 @@ class Component(NonTerminatingSymbol):
         elif isinstance(parser.peek(), sentences.EmptySentence):
             parser.next()
             return None
+        elif isinstance(parser.peek(), sentences.Picture):
+            return PictureImportation.parse(parser)
 
     def toLaTeX(self):
         pass
@@ -183,6 +196,8 @@ class UnorderedList(NonTerminatingSymbol):
             parser.next()
         if not isinstance(parser.peek(), sentences.EmptySentence):
             raise ParseError(UnorderedList.__symbol_name)
+        while isinstance(parser.peek(), sentences.EmptySentence):
+            parser.next()
         return UnorderedList(listitems)
 
     def toLaTeX(self):
@@ -229,6 +244,8 @@ class OrderedList(NonTerminatingSymbol):
             parser.next()
         if not isinstance(parser.peek(), sentences.EmptySentence):
             raise ParseError(OrderedList.__symbol_name)
+        while isinstance(parser.peek(), sentences.EmptySentence):
+            parser.next()
         return OrderedList(listitems)
 
     def toLaTeX(self):
@@ -257,3 +274,30 @@ class OrderedList(NonTerminatingSymbol):
         ret.append('\\end{enumerate}')
 
         return ret
+
+
+class PictureImportation(NonTerminatingSymbol):
+    __symbol_name = 'PictureImportation'
+
+    def __init__(self, picture: sentences.Picture):
+        self.picture = picture
+
+    @staticmethod
+    def parse(parser: Parser):
+        if not isinstance(parser.peek(), sentences.Picture):
+            raise ParseError(PictureImportation.__symbol_name)
+        picture = parser.peek()
+        parser.next()
+        if not isinstance(parser.peek(), sentences.EmptySentence):
+            raise ParseError(PictureImportation.__symbol_name)
+        return PictureImportation(picture)
+
+    def toLaTeX(self):
+        ret = []
+        ret.append('\\begin{figure}')
+        ret.append('\\includegraphics{' + self.picture.path_to_pic + '}')
+        if self.picture.alt_text is not None and self.picture.alt_text != '':
+            ret.append('\\caption{' + self.picture.alt_text + '}')
+        ret.append('\\end{figure}')
+        return ret
+
