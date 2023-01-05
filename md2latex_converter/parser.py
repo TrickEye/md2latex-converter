@@ -19,6 +19,7 @@ Markdown Grammar used in this project is listed as follows:
 """
 from md2latex_converter.error import ParseError, ListHierarchyWarning
 from md2latex_converter import sentences
+from md2latex_converter.inline import LaTeXEscape
 
 
 class Parser:
@@ -76,7 +77,8 @@ class Document(NonTerminatingSymbol):
         #         title_string = component.title.title_name
 
         used_packages = [
-            r'\usepackage{graphicx}'
+            r'\usepackage{graphicx}',
+            r'\usepackage{hyperref}'
         ]
 
         title_string = title_candidates[0].title.title_name \
@@ -153,7 +155,7 @@ class Title(NonTerminatingSymbol):
             return None
         else:
             label = Title.labels[self.title.hierarchy]
-            return ['\\' + label + '{' + self.title.title_name + '}']
+            return ['\\' + label + '{' + LaTeXEscape(self.title.title_name) + '}']
 
 
 class PlainText(NonTerminatingSymbol):
@@ -177,7 +179,7 @@ class PlainText(NonTerminatingSymbol):
         return PlainText(texts)
 
     def toLaTeX(self):
-        return [text.content for text in self.texts]
+        return [LaTeXEscape(text.content) for text in self.texts]
 
 
 class UnorderedList(NonTerminatingSymbol):
@@ -210,16 +212,16 @@ class UnorderedList(NonTerminatingSymbol):
         cur = [0]
         for _ in range(len(self.listitems)):
             if cur[-1] == hierarchies[_]:
-                ret.append('\\item ' + self.listitems[_].main_content)
+                ret.append('\\item ' + LaTeXEscape(self.listitems[_].main_content))
             elif cur[-1] < hierarchies[_]:
                 ret.append('\\begin{itemize}')
-                ret.append('\\item ' + self.listitems[_].main_content)
+                ret.append('\\item ' + LaTeXEscape(self.listitems[_].main_content))
                 cur.append(hierarchies[_])
             elif cur[-1] > hierarchies[_]:
                 while cur[-1] > hierarchies[_]:
                     cur.pop()
                     ret.append('\\end{itemize}')
-                ret.append('\\item ' + self.listitems[_].main_content)
+                ret.append('\\item ' + LaTeXEscape(self.listitems[_].main_content))
         while cur[-1] > 0:
             cur.pop()
             ret.append('\\end{itemize}')
@@ -258,16 +260,16 @@ class OrderedList(NonTerminatingSymbol):
         cur = [0]
         for _ in range(len(self.listitems)):
             if cur[-1] == hierarchies[_]:
-                ret.append('\\item ' + self.listitems[_].main_content)
+                ret.append('\\item ' + LaTeXEscape(self.listitems[_].main_content))
             elif cur[-1] < hierarchies[_]:
                 ret.append('\\begin{enumerate}')
-                ret.append('\\item ' + self.listitems[_].main_content)
+                ret.append('\\item ' + LaTeXEscape(self.listitems[_].main_content))
                 cur.append(hierarchies[_])
             elif cur[-1] > hierarchies[_]:
                 while cur[-1] > hierarchies[_]:
                     cur.pop()
                     ret.append('\\end{enumerate}')
-                ret.append('\\item ' + self.listitems[_].main_content)
+                ret.append('\\item ' + LaTeXEscape(self.listitems[_].main_content))
         while cur[-1] > 0:
             cur.pop()
             ret.append('\\end{enumerate}')

@@ -1,5 +1,4 @@
-import sys
-from typing import Tuple
+import os
 
 from md2latex_converter import inputhandler, regexlexer
 from md2latex_converter.error import *
@@ -23,7 +22,9 @@ def main(defaultfilename: str = None) -> None:
 
     latexes = document.toLaTeX()
 
-    with open('output.tex', 'w', encoding='utf-8') as f:
+    output_basename = (os.path.basename(filename)[:-3] if filename.endswith('.md') else os.path.basename(filename)) + '.tex'
+
+    with open(output_basename, 'w', encoding='utf-8') as f:
         for _ in latexes:
             f.write(_)
             f.write('\n')
