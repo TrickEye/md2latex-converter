@@ -5,21 +5,21 @@ Markdown Grammar used in this project is listed as follows:
     Document:
         (Component)* [sentence.eof]
     Components:
-        (Title) | (PlainText) | (UnorderedList) | (OrderedList) | [sentence.emptySentence]
+        (Title) | (PlainText) | (UnorderedList) | (OrderedList) | (PictureImportation) | [sentence.emptySentence]
     Title:
         [sentence.title]
     PlainText:
         [sentence.text]* [sentence.emptySentence]+
     UnorderedList:
-        [sentence.unorderedList]* [sentence.emptySentence]+
+        ([sentence.unorderedList] [sentence.text]* )* [sentence.emptySentence]+
     OrderedList:
-        [sentence.orderedList]* [sentence.emptySentence]+
+        ([sentence.orderedList] [sentence.text]* )* [sentence.emptySentence]+
     PictureImportation:
         [sentence.orderedList] [sentence.emptySentence]+
 """
 from md2latex_converter.error import ParseError, ListHierarchyWarning
 from md2latex_converter import sentences
-from md2latex_converter.inline import LaTeXEscape
+from md2latex_converter.inline import texify
 
 
 class Parser:
@@ -82,10 +82,11 @@ class Document(NonTerminatingSymbol):
         ]
 
         title_string = title_candidates[0].title.title_name \
-            if len(title_candidates := list(filter(lambda c: isinstance(c, Title) and c.title.hierarchy == 1, self.components))) == 1 \
+            if len(title_candidates := list(
+            filter(lambda c: isinstance(c, Title) and c.title.hierarchy == 1, self.components))) == 1 \
             else 'Your title for the article!'
 
-        title_decl = '\\title{' + title_string + '}'
+        title_decl = '\\title{' + texify(title_string) + '}'
 
         document_begin = '\\begin{document}'
 
@@ -155,7 +156,7 @@ class Title(NonTerminatingSymbol):
             return None
         else:
             label = Title.labels[self.title.hierarchy]
-            return ['\\' + label + '{' + LaTeXEscape(self.title.title_name) + '}']
+            return ['\\' + label + '{' + texify(self.title.title_name) + '}']
 
 
 class PlainText(NonTerminatingSymbol):
@@ -179,7 +180,8 @@ class PlainText(NonTerminatingSymbol):
         return PlainText(texts)
 
     def toLaTeX(self):
-        return [LaTeXEscape(text.content) for text in self.texts]
+        # return [texify(text.content) for text in self.texts]
+        return [texify(' '.join([text.content.strip() for text in self.texts]))]
 
 
 class UnorderedList(NonTerminatingSymbol):
@@ -194,8 +196,12 @@ class UnorderedList(NonTerminatingSymbol):
         if not isinstance(parser.peek(), sentences.UnorderedList):
             raise ParseError(UnorderedList.__symbol_name)
         while isinstance(parser.peek(), sentences.UnorderedList):
-            listitems.append(parser.peek())
+            temp = [parser.peek()]
             parser.next()
+            while isinstance(parser.peek(), sentences.Text):
+                temp.append(parser.peek())
+                parser.next()
+            listitems.append(temp)
         if not isinstance(parser.peek(), sentences.EmptySentence):
             raise ParseError(UnorderedList.__symbol_name)
         while isinstance(parser.peek(), sentences.EmptySentence):
@@ -203,25 +209,28 @@ class UnorderedList(NonTerminatingSymbol):
         return UnorderedList(listitems)
 
     def toLaTeX(self):
-        spans = set([_.whitespace_span for _ in self.listitems])
+        spans = set([_[0].whitespace_span for _ in self.listitems])
         spans = list(spans)
         spans.sort()
-        hierarchies = [spans.index(_.whitespace_span) for _ in self.listitems]
+        hierarchies = [spans.index(_[0].whitespace_span) for _ in self.listitems]
 
         ret = ['\\begin{itemize}']
         cur = [0]
         for _ in range(len(self.listitems)):
             if cur[-1] == hierarchies[_]:
-                ret.append('\\item ' + LaTeXEscape(self.listitems[_].main_content))
+                # ret.append('\\item ' + texify(self.listitems[_][0].main_content.strip() + ' ' + ' '.join([k.content.strip() for k in self.listitems[_][1:]])))
+                ret.append('\\item ' + texify(' '.join([self.listitems[_][0].main_content.strip(), *[k.content.strip() for k in self.listitems[_][1:]]])))
             elif cur[-1] < hierarchies[_]:
                 ret.append('\\begin{itemize}')
-                ret.append('\\item ' + LaTeXEscape(self.listitems[_].main_content))
+                # ret.append('\\item ' + texify(self.listitems[_].main_content))
+                ret.append('\\item ' + texify(' '.join([self.listitems[_][0].main_content.strip(), *[k.content.strip() for k in self.listitems[_][1:]]])))
                 cur.append(hierarchies[_])
             elif cur[-1] > hierarchies[_]:
                 while cur[-1] > hierarchies[_]:
                     cur.pop()
                     ret.append('\\end{itemize}')
-                ret.append('\\item ' + LaTeXEscape(self.listitems[_].main_content))
+                # ret.append('\\item ' + texify(self.listitems[_].main_content))
+                ret.append('\\item ' + texify(' '.join([self.listitems[_][0].main_content.strip(), *[k.content.strip() for k in self.listitems[_][1:]]])))
         while cur[-1] > 0:
             cur.pop()
             ret.append('\\end{itemize}')
@@ -242,8 +251,12 @@ class OrderedList(NonTerminatingSymbol):
         if not isinstance(parser.peek(), sentences.OrderedList):
             raise ParseError(OrderedList.__symbol_name)
         while isinstance(parser.peek(), sentences.OrderedList):
-            listitems.append(parser.peek())
+            temp = [parser.peek()]
             parser.next()
+            while isinstance(parser.peek(), sentences.Text):
+                temp.append(parser.peek())
+                parser.next()
+            listitems.append(temp)
         if not isinstance(parser.peek(), sentences.EmptySentence):
             raise ParseError(OrderedList.__symbol_name)
         while isinstance(parser.peek(), sentences.EmptySentence):
@@ -251,25 +264,28 @@ class OrderedList(NonTerminatingSymbol):
         return OrderedList(listitems)
 
     def toLaTeX(self):
-        spans = set([_.whitespace_span for _ in self.listitems])
+        spans = set([_[0].whitespace_span for _ in self.listitems])
         spans = list(spans)
         spans.sort()
-        hierarchies = [spans.index(_.whitespace_span) for _ in self.listitems]
+        hierarchies = [spans.index(_[0].whitespace_span) for _ in self.listitems]
 
         ret = ['\\begin{enumerate}']
         cur = [0]
         for _ in range(len(self.listitems)):
             if cur[-1] == hierarchies[_]:
-                ret.append('\\item ' + LaTeXEscape(self.listitems[_].main_content))
+                # ret.append('\\item ' + texify(self.listitems[_].main_content))
+                ret.append('\\item ' + texify(' '.join([self.listitems[_][0].main_content.strip(), *[k.content.strip() for k in self.listitems[_][1:]]])))
             elif cur[-1] < hierarchies[_]:
                 ret.append('\\begin{enumerate}')
-                ret.append('\\item ' + LaTeXEscape(self.listitems[_].main_content))
+                # ret.append('\\item ' + texify(self.listitems[_].main_content))
+                ret.append('\\item ' + texify(' '.join([self.listitems[_][0].main_content.strip(), *[k.content.strip() for k in self.listitems[_][1:]]])))
                 cur.append(hierarchies[_])
             elif cur[-1] > hierarchies[_]:
                 while cur[-1] > hierarchies[_]:
                     cur.pop()
                     ret.append('\\end{enumerate}')
-                ret.append('\\item ' + LaTeXEscape(self.listitems[_].main_content))
+                # ret.append('\\item ' + texify(self.listitems[_].main_content))
+                ret.append('\\item ' + texify(' '.join([self.listitems[_][0].main_content.strip(), *[k.content.strip() for k in self.listitems[_][1:]]])))
         while cur[-1] > 0:
             cur.pop()
             ret.append('\\end{enumerate}')
@@ -302,4 +318,3 @@ class PictureImportation(NonTerminatingSymbol):
             ret.append('\\caption{' + self.picture.alt_text + '}')
         ret.append('\\end{figure}')
         return ret
-
