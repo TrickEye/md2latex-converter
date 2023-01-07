@@ -1,27 +1,27 @@
 import re
 
 
-def texify(content: str):
-    bolded = False
-    italic = False
-    inline_code = False
+def texify(content: str) -> str:
+    bolded: bool | str = False
+    italic: bool = False
+    inline_code: bool = False
 
     i, l = 0, len(content)
-    buffer = ''
+    buffer: str = ''
     while i < l:
-        if content.startswith('__', i) and content.count('__', i + 1) != 0:
+        if content.startswith('__', i) and (bolded or content.count('__', i + 1) != 0):
             buffer += '\\textbf{' if not bolded else '}'
             bolded = '__' if not bolded else False
             i += 2
-        if content.startswith('**', i) and content.count('**', i + 1) != 0:
+        if content.startswith('**', i) and (bolded or content.count('**', i + 1) != 0):
             buffer += '\\textbf{' if not bolded else '}'
             bolded = '**' if not bolded else False
             i += 2
-        elif content.startswith('_', i) and content.count('_', i + 1) != 0:
+        elif content.startswith('_', i) and (italic or content.count('_', i + 1) != 0):
             buffer += '\\textit{' if not italic else '}'
             italic = not italic
             i += 1
-        elif content.startswith('`', i):
+        elif content.startswith('`', i) and (inline_code or content.count('`', i + 1) != 0):
             buffer += '\\texttt{' if not inline_code else '}'
             inline_code = not inline_code
             i += 1

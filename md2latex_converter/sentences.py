@@ -1,4 +1,5 @@
 import re
+from typing import Any
 
 
 class Sentence:
@@ -6,7 +7,7 @@ class Sentence:
     identifier: str
     content: str
 
-    def __init__(self, index, identifier, content):
+    def __init__(self, index: int, identifier: str, content: str):
         self.line = index + 1
         self.identifier = identifier
         self.content = content
@@ -16,31 +17,35 @@ class Sentence:
 
 
 class Title(Sentence):
+    title_name: str
+    hierarchy: int
 
-    def __init__(self, line, content):
+    def __init__(self, line: int, content: str):
         super().__init__(line, 'Title', content)
         self.hierarchy = len(re.match(r'(#+)', content).group())
         self.title_name = re.match(r'#+\s+(.*)$', content).group(1)
 
 
 class Text(Sentence):
-    def __init__(self, line, content):
+    def __init__(self, line: int, content: str):
         super().__init__(line, 'Text', content)
 
 
 class EmptySentence(Sentence):
-    def __init__(self, line):
+    def __init__(self, line: int):
         super().__init__(line, 'EmptySentence', ' ')
 
 
 class UnorderedList(Sentence):
+    main_content: str
+    whitespace_span: int
 
-    def __init__(self, line, content):
+    def __init__(self, line: int, content: str):
         super().__init__(line, 'UnorderedList', content)
         match = re.match(r'(\s*)[*-]\s+(.*)', content)
 
-        whitespace = match.group(1)
-        whitespace_span = 0
+        whitespace: str = match.group(1)
+        whitespace_span: int = 0
         for _ in whitespace:
             whitespace_span += 4 if _ == '\t' else 1
 
@@ -49,10 +54,10 @@ class UnorderedList(Sentence):
 
 
 class OrderedList(Sentence):
-    hierarchy: int
+    whitespace_span: int
     main_content: str
 
-    def __init__(self, line, content):
+    def __init__(self, line: int, content: str):
         super().__init__(line, 'OrderedList', content)
         match = re.match(r'(\s*)\d+\.\s+(.*)', content)
 
@@ -71,6 +76,9 @@ class Eof(Sentence):
 
 
 class Picture(Sentence):
+    path_to_pic: str
+    alt_text: str
+
     def __init__(self, line, content):
         super().__init__(line, 'Picture', content)
         match = re.match('!\[(.*)]\((.*)\)', content)

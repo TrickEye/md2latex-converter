@@ -2,7 +2,8 @@ import os
 
 from md2latex_converter import inputhandler, regexlexer
 from md2latex_converter.error import *
-from md2latex_converter.parser import Parser
+from md2latex_converter.parser import Parser, Document
+from md2latex_converter.sentences import Sentence
 
 
 def main(defaultfilename: str = None) -> None:
@@ -10,19 +11,19 @@ def main(defaultfilename: str = None) -> None:
 
     filename, isdev = parse_command(defaultfilename)
 
-    file_string = inputhandler.getfileString(filename)
+    file_string: str = inputhandler.getfileString(filename)
 
-    sentence_list = regexlexer.lex(file_string)
+    sentence_list: list[Sentence] = regexlexer.lex(file_string)
 
     if isdev:
         for _ in sentence_list:
             print(_)
 
-    document = Parser(sentence_list).parse()
+    document: Document = Parser(sentence_list).parse()
 
-    latexes = document.toLaTeX()
+    latexes: list[str] = document.toLaTeX()
 
-    output_basename = (os.path.basename(filename)[:-3] if filename.endswith('.md') else os.path.basename(filename)) + '.tex'
+    output_basename: str = (os.path.basename(filename)[:-3] if filename.endswith('.md') else os.path.basename(filename)) + '.tex'
 
     with open(output_basename, 'w', encoding='utf-8') as f:
         for _ in latexes:
@@ -48,4 +49,4 @@ def parse_command(defaultfilename: str) -> tuple[str, bool]:
 
 
 if __name__ == "__main__":
-    main('testfile.md')
+    main('README.md')

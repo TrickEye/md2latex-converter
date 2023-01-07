@@ -3,7 +3,7 @@ import re
 from md2latex_converter.sentences import *
 
 
-def lex(input_string: str):
+def lex(input_string: str) -> list[Sentence]:
     """
     A general lexer for each line of the source .md file.
 
