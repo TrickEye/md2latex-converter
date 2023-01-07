@@ -21,13 +21,13 @@ def main(defaultfilename: str = None) -> None:
 
     document: Document = Parser(sentence_list).parse()
 
-    latexes: list[str] = document.toLaTeX()
+    latexes: list[tuple[int, str]] = document.toLaTeX()
 
     output_basename: str = (os.path.basename(filename)[:-3] if filename.endswith('.md') else os.path.basename(filename)) + '.tex'
 
     with open(output_basename, 'w', encoding='utf-8') as f:
         for _ in latexes:
-            f.write(_)
+            f.write('\t' * _[0] + _[1])
             f.write('\n')
 
     print('Done!')

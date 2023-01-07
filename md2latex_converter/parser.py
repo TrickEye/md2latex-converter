@@ -70,12 +70,12 @@ class Document(NonTerminatingSymbol):
             raise ParseError(Document.__symbol_name)
         return Document(components)
 
-    def toLaTeX(self) -> list[str]:
-        document_class: str = r'\documentclass{ctexart}'
+    def toLaTeX(self) -> list[tuple[int, str]]:
+        document_class: tuple[int, str] = (0, r'\documentclass{ctexart}')
 
-        used_packages: list[str] = [
-            r'\usepackage{graphicx}',
-            r'\usepackage{hyperref}'
+        used_packages: list[tuple[int, str]] = [
+            (0, r'\usepackage{graphicx}'),
+            (0, r'\usepackage{hyperref}')
         ]
 
         title_candidates: list[Component] = list(
@@ -85,15 +85,15 @@ class Document(NonTerminatingSymbol):
         assert isinstance(candidate0, Title)
         title_string: str = candidate0.title.title_name if len(title_candidates) == 1 else 'Your title for the article!'
 
-        title_decl: str = r'\title{' + texify(title_string) + '}'
+        title_decl: tuple[int, str] = (0, r'\title{' + texify(title_string) + '}')
 
-        document_begin: str = r'\begin{document}'
+        document_begin: tuple[int, str] = (0, r'\begin{document}')
 
-        make_title: str = r'\maketitle'
+        make_title: tuple[int, str] = (1, r'\maketitle')
 
-        components_latex: list[str] = [_ for component in self.components for _ in [*component.toLaTeX(), '']]
+        components_latex: list[tuple[int, str]] = [_ for component in self.components for _ in [*component.toLaTeX(), (0, '')]]
 
-        document_end: str = r'\end{document}'
+        document_end: tuple[int, str] = (0, r'\end{document}')
 
         return [
             document_class,
@@ -125,7 +125,7 @@ class Component(NonTerminatingSymbol):
         elif isinstance(parser.peek(), sentences.Picture):
             return PictureImportation.parse(parser)
 
-    def toLaTeX(self) -> list[str]:
+    def toLaTeX(self) -> list[tuple[int, str]]:
         pass
 
 
@@ -154,12 +154,12 @@ class Title(Component):
             parser.next()
             return Title(title)
 
-    def toLaTeX(self) -> list[str]:
+    def toLaTeX(self) -> list[tuple[int, str]]:
         if self.title.hierarchy == 1:
             return []
         else:
             label: str = Title.labels[self.title.hierarchy]
-            return ['\\' + label + '{' + texify(self.title.title_name) + '}']
+            return [(1, '\\' + label + '{' + texify(self.title.title_name) + '}')]
 
 
 class PlainText(Component):
@@ -184,8 +184,8 @@ class PlainText(Component):
             parser.next()
         return PlainText(texts)
 
-    def toLaTeX(self) -> list[str]:
-        return [texify(' '.join([text.content.strip() for text in self.texts]))]
+    def toLaTeX(self) -> list[tuple[int, str]]:
+        return [(1, texify(' '.join([text.content.strip() for text in self.texts])))]
 
 
 class UnorderedList(Component):
@@ -214,36 +214,41 @@ class UnorderedList(Component):
             parser.next()
         return UnorderedList(listitems)
 
-    def toLaTeX(self) -> list[str]:
+    def toLaTeX(self) -> list[tuple[int, str]]:
+        indent = 1
+
         spans: set[int] = set([_[0].whitespace_span for _ in self.listitems])
         spans: list[int] = list(spans)
         spans.sort()
         hierarchies: list[int] = [spans.index(_[0].whitespace_span) for _ in self.listitems]
 
-        ret: list[str] = [r'\begin{itemize}']
+        ret: list[tuple[int, str]] = [(1, r'\begin{itemize}')]
         cur: list[int] = [0]
         for _ in range(len(self.listitems)):
             if cur[-1] == hierarchies[_]:
-                ret.append(r'\item ' + texify(' '.join(
+                ret.append((indent + 1, r'\item ' + texify(' '.join(
                     [self.listitems[_][0].main_content.strip(),
-                     *[k.content.strip() for k in self.listitems[_][1]]])))
+                     *[k.content.strip() for k in self.listitems[_][1]]]))))
             elif cur[-1] < hierarchies[_]:
-                ret.append(r'\begin{itemize}')
-                ret.append(r'\item ' + texify(' '.join(
+                ret.append((indent + 1, r'\begin{itemize}'))
+                indent += 1
+                ret.append((indent + 1, r'\item ' + texify(' '.join(
                     [self.listitems[_][0].main_content.strip(),
-                     *[k.content.strip() for k in self.listitems[_][1]]])))
+                     *[k.content.strip() for k in self.listitems[_][1]]]))))
                 cur.append(hierarchies[_])
             elif cur[-1] > hierarchies[_]:
                 while cur[-1] > hierarchies[_]:
                     cur.pop()
-                    ret.append(r'\end{itemize}')
-                ret.append(r'\item ' + texify(' '.join(
+                    ret.append((indent, r'\end{itemize}'))
+                    indent -= 1
+                ret.append((indent + 1, r'\item ' + texify(' '.join(
                     [self.listitems[_][0].main_content.strip(),
-                     *[k.content.strip() for k in self.listitems[_][1]]])))
+                     *[k.content.strip() for k in self.listitems[_][1]]]))))
         while cur[-1] > 0:
             cur.pop()
-            ret.append(r'\end{itemize}')
-        ret.append(r'\end{itemize}')
+            ret.append((indent, r'\end{itemize}'))
+            indent -= 1
+        ret.append((1, r'\end{itemize}'))
 
         return ret
 
@@ -274,36 +279,41 @@ class OrderedList(Component):
             parser.next()
         return OrderedList(listitems)
 
-    def toLaTeX(self) -> list[str]:
+    def toLaTeX(self) -> list[tuple[int, str]]:
+        indent = 1
+
         spans: set[int] = set([_[0].whitespace_span for _ in self.listitems])
         spans: list[int] = list(spans)
         spans.sort()
         hierarchies: list[int] = [spans.index(_[0].whitespace_span) for _ in self.listitems]
 
-        ret: list[str] = ['\\begin{enumerate}']
+        ret: list[tuple[int, str]] = [(1, '\\begin{enumerate}')]
         cur: list[int] = [0]
         for _ in range(len(self.listitems)):
             if cur[-1] == hierarchies[_]:
-                ret.append('\\item ' + texify(' '.join(
+                ret.append((indent + 1, '\\item ' + texify(' '.join(
                     [self.listitems[_][0].main_content.strip(),
-                     *[k.content.strip() for k in self.listitems[_][1]]])))
+                     *[k.content.strip() for k in self.listitems[_][1]]]))))
             elif cur[-1] < hierarchies[_]:
-                ret.append('\\begin{enumerate}')
-                ret.append('\\item ' + texify(' '.join(
+                ret.append((indent + 1, '\\begin{enumerate}'))
+                indent += 1
+                ret.append((indent + 1, '\\item ' + texify(' '.join(
                     [self.listitems[_][0].main_content.strip(),
-                     *[k.content.strip() for k in self.listitems[_][1]]])))
+                     *[k.content.strip() for k in self.listitems[_][1]]]))))
                 cur.append(hierarchies[_])
             elif cur[-1] > hierarchies[_]:
                 while cur[-1] > hierarchies[_]:
                     cur.pop()
-                    ret.append('\\end{enumerate}')
-                ret.append('\\item ' + texify(' '.join(
+                    ret.append((indent, '\\end{enumerate}'))
+                    indent -= 1
+                ret.append((indent + 1, '\\item ' + texify(' '.join(
                     [self.listitems[_][0].main_content.strip(),
-                     *[k.content.strip() for k in self.listitems[_][1]]])))
+                     *[k.content.strip() for k in self.listitems[_][1]]]))))
         while cur[-1] > 0:
             cur.pop()
-            ret.append('\\end{enumerate}')
-        ret.append('\\end{enumerate}')
+            ret.append((indent, '\\end{enumerate}'))
+            indent -= 1
+        ret.append((1, '\\end{enumerate}'))
 
         return ret
 
@@ -327,11 +337,11 @@ class PictureImportation(Component):
         assert isinstance(picture, sentences.Picture)
         return PictureImportation(picture)
 
-    def toLaTeX(self) -> list[str]:
-        ret: list[str] = []
-        ret.append(r'\begin{figure}')
-        ret.append(r'\includegraphics{' + self.picture.path_to_pic + '}')
+    def toLaTeX(self) -> list[tuple[int, str]]:
+        ret: list[tuple[int, str]] = []
+        ret.append((1, r'\begin{figure}'))
+        ret.append((2, r'\includegraphics{' + self.picture.path_to_pic + '}'))
         if self.picture.alt_text is not None and self.picture.alt_text != '':
-            ret.append(r'\caption{' + self.picture.alt_text + '}')
-        ret.append(r'\end{figure}')
+            ret.append((2, r'\caption{' + self.picture.alt_text + '}'))
+        ret.append((1, r'\end{figure}'))
         return ret

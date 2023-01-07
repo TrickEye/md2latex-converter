@@ -39,14 +39,30 @@ to produce a `.pdf` file from the LaTeX source code.
 
 ## Current progress and plans | 进度，安排
 
-- Currently `m2l` basically supports plain text, title, 
-unordered/ordered lists and pictures (please use a 
-local path if you do so, otherwise you are being impolite
-to LaTeX.) 
-- The future versions will focus on equations, codeblocks and 
-inline patterns (**bold**, _italic_,
-[hyperlinks](#current-progress-and-plans--进度安排), `inline-code-snippets`, etc.)
+- Currently `m2l` basically supports:
+  - plain text, 
+  - title, 
+  - unordered/ordered lists,
+  - pictures (please use a local path if you do so, otherwise you are being impolite to LaTeX.)
+  - inline patterns
+    - something **bold**
+    - something _italic_
+    - or something **_bold and italic_**
+    - inline `code snippets`
+    - [hyperlinks](https://http.cat/404)
+- The future versions will focus on equations, codeblocks
+- Versions in the more distant future will support DIY markdown grammar and texify methods.
 
-- 现阶段支持了纯文本，标题，有/无序列表，图片（本地url）等。
-- 未来版本计划支持公式、代码块和行内样式（**粗体**，_斜体_，
-[超链接](#current-progress-and-plans--进度安排)，`行内代码`）
+- 现阶段支持了：
+  - 文本
+  - 标题
+  - 有序无序列表
+  - 图片（本地路径）
+  - 行内样式
+    - 粗体文本
+    - 斜体文本
+    - 又粗又斜的文本（你为什么要这样干）
+    - 代码片段
+    - [超链接](https://http.cat/404)
+- 未来版本计划支持公式、代码块
+- 在更久远的未来，可以支持用户自定义md语法和 texify 方法

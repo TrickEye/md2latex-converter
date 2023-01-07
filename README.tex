@@ -1,0 +1,70 @@
+\documentclass{ctexart}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\title{\texttt{md2latex-converter} introduction }
+\begin{document}
+	\maketitle
+
+	> \texttt{pip install md2latex-converter}
+
+	\texttt{md2latex-converter} is a Python package that helps to convert a .md (Markdown) file into a .tex (LaTeX) file, with special support for Chinese, using the \texttt{ctex} package provided by the LaTeX community.
+
+	\texttt{md2latex-converter} 是一个将 Markdown 文件转换成 LaTeX 源代码的 Python 工具包。使用了 LaTeX 的 \texttt{ctex} 包，因此对于 中文的编码环境有特别的关照。
+
+	\section{Installation and Usage | 安装与使用}
+
+	\texttt{pip install md2latex-converter}
+
+	This will install the package into your current python interpreter. The installation will add \texttt{m2l.exe} into the \texttt{Scripts} folder of python (on Windows) or \texttt{m2l} into \texttt{~/.local/bin/} by default (on Linux), if you have previously added the path above into your system PATH variable, you should be able to invoke the program through the command \texttt{m2l}.
+
+	这会在现有的 Python 解释器中安装此包。安装过程中会将 \texttt{m2l.exe} 安装在 当前的 Python 的 \texttt{Scripts} 路径（Windows）或默认将 \texttt{m2l} 安装到 \texttt{~/.local/bin/} 路径（Linux）。如果此前已经将这个路径加入了 PATH 变量， 那么可以通过 \texttt{m2l} 指令来运行此程序。
+
+	\texttt{m2l file.md}
+
+	This will read and convert the content in \texttt{file.md} into \texttt{output.tex} at the current working directory. After the conversion, use \texttt{xelatex output} to produce a \texttt{.pdf} file from the LaTeX source code.
+
+	这会读取并转换 \texttt{file.md} 的内容到当前工作路径的 \texttt{output.tex} 文件。在此之后，可以使用 \texttt{xelatex output} 来编译产生 pdf
+
+	\section{Current progress and plans | 进度，安排}
+
+	\begin{itemize}
+		\item Currently \texttt{m2l} basically supports:
+		\begin{itemize}
+			\item plain text,
+			\item title,
+			\item unordered/ordered lists,
+			\item pictures (please use a local path if you do so, otherwise you are being impolite to LaTeX.)
+			\item inline patterns
+			\begin{itemize}
+				\item something \textbf{bold}
+				\item something \textit{italic}
+				\item or something \textbf{\textit{bold and italic}}
+				\item inline \texttt{code snippets}
+				\item \href{https://http.cat/404}{hyperlinks}
+			\end{itemize}
+		\end{itemize}
+		\item The future versions will focus on equations, codeblocks
+		\item Versions in the more distant future will support DIY markdown grammar and texify methods.
+	\end{itemize}
+
+	\begin{itemize}
+		\item 现阶段支持了：
+		\begin{itemize}
+			\item 文本
+			\item 标题
+			\item 有序无序列表
+			\item 图片（本地路径）
+			\item 行内样式
+			\begin{itemize}
+				\item 粗体文本
+				\item 斜体文本
+				\item 又粗又斜的文本（你为什么要这样干）
+				\item 代码片段
+				\item \href{https://http.cat/404}{超链接}
+			\end{itemize}
+		\end{itemize}
+		\item 未来版本计划支持公式、代码块
+		\item 在更久远的未来，可以支持用户自定义md语法和 texify 方法
+	\end{itemize}
+
+\end{document}
