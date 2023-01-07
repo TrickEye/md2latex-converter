@@ -21,9 +21,13 @@
 
 	\texttt{m2l file.md}
 
-	This will read and convert the content in \texttt{file.md} into \texttt{output.tex} at the current working directory. After the conversion, use \texttt{xelatex output} to produce a \texttt{.pdf} file from the LaTeX source code.
+	This will read and convert the content in \texttt{file.md} into \texttt{file.tex} at the current working directory. After the conversion, use \texttt{xelatex file} to produce a \texttt{.pdf} file from the LaTeX source code.
 
-	这会读取并转换 \texttt{file.md} 的内容到当前工作路径的 \texttt{output.tex} 文件。在此之后，可以使用 \texttt{xelatex output} 来编译产生 pdf
+	The output filename depends on your input, for \texttt{foo.md}, m2l will produce \texttt{foo.tex}
+
+	这会读取并转换 \texttt{file.md} 的内容到当前工作路径的 \texttt{file.tex} 文件。在此之后，可以使用 \texttt{xelatex file} 来编译产生 pdf
+
+	输出的文件名由命令输入决定，对 \texttt{foo.md} 的转换会产生 \texttt{foo.tex}
 
 	\section{Current progress and plans | 进度，安排}
 
@@ -56,10 +60,10 @@
 			\item 图片（本地路径）
 			\item 行内样式
 			\begin{itemize}
-				\item 粗体文本
-				\item 斜体文本
-				\item 又粗又斜的文本（你为什么要这样干）
-				\item 代码片段
+				\item \textbf{粗体}文本
+				\item *斜体*文本
+				\item \textbf{\textit{又粗又斜}}的文本（你为什么要这样干）
+				\item \texttt{代码}片段
 				\item \href{https://http.cat/404}{超链接}
 			\end{itemize}
 		\end{itemize}

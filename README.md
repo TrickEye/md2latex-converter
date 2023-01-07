@@ -30,12 +30,16 @@ through the command `m2l`.
 
 `m2l file.md`
 
-This will read and convert the content in `file.md` into `output.tex`
-at the current working directory. After the conversion, use `xelatex output`
+This will read and convert the content in `file.md` into `file.tex`
+at the current working directory. After the conversion, use `xelatex file`
 to produce a `.pdf` file from the LaTeX source code.
 
-这会读取并转换 `file.md` 的内容到当前工作路径的 `output.tex` 文件。在此之后，可以使用
-`xelatex output` 来编译产生 pdf
+The output filename depends on your input, for `foo.md`, m2l will produce `foo.tex`
+
+这会读取并转换 `file.md` 的内容到当前工作路径的 `file.tex` 文件。在此之后，可以使用
+`xelatex file` 来编译产生 pdf
+
+输出的文件名由命令输入决定，对 `foo.md` 的转换会产生 `foo.tex`
 
 ## Current progress and plans | 进度，安排
 
@@ -59,10 +63,10 @@ to produce a `.pdf` file from the LaTeX source code.
   - 有序无序列表
   - 图片（本地路径）
   - 行内样式
-    - 粗体文本
-    - 斜体文本
-    - 又粗又斜的文本（你为什么要这样干）
-    - 代码片段
+    - **粗体**文本
+    - *斜体*文本
+    - **_又粗又斜_**的文本（你为什么要这样干）
+    - `代码`片段
     - [超链接](https://http.cat/404)
 - 未来版本计划支持公式、代码块
 - 在更久远的未来，可以支持用户自定义md语法和 texify 方法

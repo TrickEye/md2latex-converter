@@ -7,7 +7,7 @@ upload command (using twine):
     `twine upload dist/*`
 """
 
-VERSION = "0.0.4"
+VERSION = "0.0.4.1"
 
 with open('LICENSE.txt', 'r', encoding='utf-8') as f:
     LICENSE = f.read()
