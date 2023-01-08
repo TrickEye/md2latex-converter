@@ -11,6 +11,10 @@ package provided by the LaTeX community.
 源代码的 Python 工具包。使用了 LaTeX 的 `ctex` 包，因此对于
 中文的编码环境有特别的关照。
 
+Due to typing system in the source code, this package runs on python newer than 3.10. I will go back to this issue soon.
+
+由于使用了一些类型系统的语法，这个包现在支持的python版本需要至少在3.10以上，会在不久后解决这个问题。
+
 ## Installation and Usage | 安装与使用
 
 `pip install md2latex-converter`
