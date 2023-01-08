@@ -7,7 +7,7 @@ upload command (using twine):
     `twine upload dist/*`
 """
 
-VERSION = "0.0.4.1"
+VERSION = "0.0.4.3"
 
 with open('LICENSE.txt', 'r', encoding='utf-8') as f:
     LICENSE = f.read()
@@ -25,6 +25,7 @@ setuptools.setup(
     entry_points={
         'console_scripts': ['m2l = md2latex_converter.__main__:main', ]
     },
+    python_requires='>=3.10',
     license=LICENSE,
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown'
