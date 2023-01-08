@@ -4,8 +4,16 @@ md2latex_converter.egg-info/*
 
 .idea/*
 
-testfile.md
+testfile.*
 
 /output.tex
 
+out/*
+
 /dist/*
+
+*.aux
+
+*.out
+
+*.log

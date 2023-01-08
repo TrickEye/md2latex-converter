@@ -65,7 +65,7 @@ The output filename depends on your input, for `foo.md`, m2l will produce `foo.t
   - 行内样式
     - **粗体**文本
     - *斜体*文本
-    - **_又粗又斜_**的文本（你为什么要这样干）
+    - **_又粗又斜_** 的文本（你为什么要这样干）
     - `代码`片段
     - [超链接](https://http.cat/404)
 - 未来版本计划支持公式、代码块
