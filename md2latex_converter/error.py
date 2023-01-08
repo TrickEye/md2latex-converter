@@ -1,4 +1,5 @@
 import sys
+from typing import Union
 
 from md2latex_converter import sentences
 
@@ -41,7 +42,7 @@ class ParseError(LocaleError):
 
 
 class ListHierarchyWarning(LocaleWarning):
-    def __init__(self, error_sentence: sentences.UnorderedList | sentences.OrderedList):
+    def __init__(self, error_sentence: Union[sentences.UnorderedList, sentences.OrderedList]):
         self.error_sentence = error_sentence
 
     def handle(self):

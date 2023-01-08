@@ -1,8 +1,9 @@
 import re
+from typing import Union
 
 
 def texify(content: str) -> str:
-    bolded: bool | str = False
+    bolded: Union[bool, str] = False
     italic: bool = False
     inline_code: bool = False
 
@@ -25,7 +26,8 @@ def texify(content: str) -> str:
             buffer += '\\texttt{' if not inline_code else '}'
             inline_code = not inline_code
             i += 1
-        elif (match := re.match('\[(.+?)]\((.*?)\)', content[i:])) is not None:
+        elif re.match('\[(.+?)]\((.*?)\)', content[i:]) is not None:
+            match = re.match('\[(.+?)]\((.*?)\)', content[i:])
             buffer += '\\href{' + match.group(2) + '}{' + match.group(1) + '}'
             i += len(match.group())
         else:

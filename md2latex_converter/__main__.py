@@ -1,5 +1,7 @@
 import os
 
+from typing import List, Tuple
+
 from md2latex_converter import inputhandler, regexlexer
 from md2latex_converter.error import *
 from md2latex_converter.parser import Parser, Document
@@ -7,13 +9,13 @@ from md2latex_converter.sentences import Sentence
 
 
 def main(defaultfilename: str = None) -> None:
-    print('hello world, this is md2latex converter!')
+    print('md2latex converter V-0.0.5a1')
 
     filename, isdev = parse_command(defaultfilename)
 
     file_string: str = inputhandler.getfileString(filename)
 
-    sentence_list: list[Sentence] = regexlexer.lex(file_string)
+    sentence_list: List[Sentence] = regexlexer.lex(file_string)
 
     if isdev:
         for _ in sentence_list:
@@ -21,7 +23,7 @@ def main(defaultfilename: str = None) -> None:
 
     document: Document = Parser(sentence_list).parse()
 
-    latexes: list[tuple[int, str]] = document.toLaTeX()
+    latexes: List[Tuple[int, str]] = document.toLaTeX()
 
     output_basename: str = (os.path.basename(filename)[:-3] if filename.endswith('.md') else os.path.basename(filename)) + '.tex'
 
@@ -33,7 +35,7 @@ def main(defaultfilename: str = None) -> None:
     print('Done!')
 
 
-def parse_command(defaultfilename: str) -> tuple[str, bool]:
+def parse_command(defaultfilename: str) -> Tuple[str, bool]:
     if defaultfilename is not None:
         filename = defaultfilename
     elif len(sys.argv) >= 2:

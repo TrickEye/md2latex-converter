@@ -17,6 +17,7 @@ Markdown Grammar used in this project is listed as follows:
     PictureImportation:
         [sentence.orderedList] [sentence.emptySentence]+
 """
+from typing import List, Tuple, Set
 
 from md2latex_converter.error import ParseError
 from md2latex_converter import sentences
@@ -25,8 +26,8 @@ from md2latex_converter.inline import texify
 
 class Parser:
 
-    def __init__(self, _sentences: list[sentences.Sentence]):
-        self.sentences: list[sentences.Sentence] = _sentences
+    def __init__(self, _sentences: List[sentences.Sentence]):
+        self.sentences: List[sentences.Sentence] = _sentences
         self.index: int = 0
         self.length: int = len(_sentences)
         self.__peek_token: sentences.Sentence = _sentences[0]
@@ -56,12 +57,12 @@ class NonTerminatingSymbol:
 class Document(NonTerminatingSymbol):
     __symbol_name = 'Document'
 
-    def __init__(self, components: list['Component']):
-        self.components: list['Component'] = components
+    def __init__(self, components: List['Component']):
+        self.components: List['Component'] = components
 
     @staticmethod
     def parse(parser: Parser) -> 'Document':
-        components: list['Component'] = []
+        components: List['Component'] = []
         while not isinstance(parser.peek(), sentences.Eof):
             component: Component = Component.parse(parser)
             if component is not None:
@@ -70,30 +71,30 @@ class Document(NonTerminatingSymbol):
             raise ParseError(Document.__symbol_name)
         return Document(components)
 
-    def toLaTeX(self) -> list[tuple[int, str]]:
-        document_class: tuple[int, str] = (0, r'\documentclass{ctexart}')
+    def toLaTeX(self) -> List[Tuple[int, str]]:
+        document_class: Tuple[int, str] = (0, r'\documentclass{ctexart}')
 
-        used_packages: list[tuple[int, str]] = [
+        used_packages: List[Tuple[int, str]] = [
             (0, r'\usepackage{graphicx}'),
             (0, r'\usepackage{hyperref}')
         ]
 
-        title_candidates: list[Component] = list(
+        title_candidates: List[Component] = list(
             filter(lambda c: isinstance(c, Title) and c.title.hierarchy == 1, self.components))
 
         candidate0 = title_candidates[0]
         assert isinstance(candidate0, Title)
         title_string: str = candidate0.title.title_name if len(title_candidates) == 1 else 'Your title for the article!'
 
-        title_decl: tuple[int, str] = (0, r'\title{' + texify(title_string) + '}')
+        title_decl: Tuple[int, str] = (0, r'\title{' + texify(title_string) + '}')
 
-        document_begin: tuple[int, str] = (0, r'\begin{document}')
+        document_begin: Tuple[int, str] = (0, r'\begin{document}')
 
-        make_title: tuple[int, str] = (1, r'\maketitle')
+        make_title: Tuple[int, str] = (1, r'\maketitle')
 
-        components_latex: list[tuple[int, str]] = [_ for component in self.components for _ in [*component.toLaTeX(), (0, '')]]
+        components_latex: List[Tuple[int, str]] = [_ for component in self.components for _ in [*component.toLaTeX(), (0, '')]]
 
-        document_end: tuple[int, str] = (0, r'\end{document}')
+        document_end: Tuple[int, str] = (0, r'\end{document}')
 
         return [
             document_class,
@@ -125,13 +126,13 @@ class Component(NonTerminatingSymbol):
         elif isinstance(parser.peek(), sentences.Picture):
             return PictureImportation.parse(parser)
 
-    def toLaTeX(self) -> list[tuple[int, str]]:
+    def toLaTeX(self) -> List[Tuple[int, str]]:
         pass
 
 
 class Title(Component):
     __symbol_name = 'Title'
-    labels: list[str] = [
+    labels: List[str] = [
         '',
         '',
         'section',
@@ -154,7 +155,7 @@ class Title(Component):
             parser.next()
             return Title(title)
 
-    def toLaTeX(self) -> list[tuple[int, str]]:
+    def toLaTeX(self) -> List[Tuple[int, str]]:
         if self.title.hierarchy == 1:
             return []
         else:
@@ -165,12 +166,12 @@ class Title(Component):
 class PlainText(Component):
     __symbol_name = 'PlainText'
 
-    def __init__(self, texts: list[sentences.Text]):
-        self.texts: list[sentences.Text] = texts
+    def __init__(self, texts: List[sentences.Text]):
+        self.texts: List[sentences.Text] = texts
 
     @staticmethod
     def parse(parser: Parser):
-        texts: list[sentences.Text] = []
+        texts: List[sentences.Text] = []
         if not isinstance(parser.peek(), sentences.Text):
             raise ParseError(PlainText.__symbol_name)
         while isinstance(parser.peek(), sentences.Text):
@@ -184,26 +185,28 @@ class PlainText(Component):
             parser.next()
         return PlainText(texts)
 
-    def toLaTeX(self) -> list[tuple[int, str]]:
+    def toLaTeX(self) -> List[Tuple[int, str]]:
         return [(1, texify(' '.join([text.content.strip() for text in self.texts])))]
 
 
 class UnorderedList(Component):
     __symbol_name = 'UnorderedList'
 
-    def __init__(self, listitems: list[tuple[sentences.UnorderedList, list[sentences.Text]]]):
-        self.listitems: list[tuple[sentences.UnorderedList, list[sentences.Text]]] = listitems
+    def __init__(self, listitems: List[Tuple[sentences.UnorderedList, List[sentences.Text]]]):
+        self.listitems: List[Tuple[sentences.UnorderedList, List[sentences.Text]]] = listitems
 
     @staticmethod
     def parse(parser: Parser) -> 'UnorderedList':
-        listitems: list[tuple[sentences.UnorderedList, list[sentences.Text]]] = []
+        listitems: List[Tuple[sentences.UnorderedList, List[sentences.Text]]] = []
         if not isinstance(parser.peek(), sentences.UnorderedList):
             raise ParseError(UnorderedList.__symbol_name)
-        while isinstance((ul := parser.peek()), sentences.UnorderedList):
+        while isinstance(parser.peek(), sentences.UnorderedList):
+            ul = parser.peek()
             assert isinstance(ul, sentences.UnorderedList)
             parser.next()
             texts = []
-            while isinstance((text := parser.peek()), sentences.Text):
+            while isinstance(parser.peek(), sentences.Text):
+                text = parser.peek()
                 assert isinstance(text, sentences.Text)
                 texts.append(text)
                 parser.next()
@@ -214,16 +217,16 @@ class UnorderedList(Component):
             parser.next()
         return UnorderedList(listitems)
 
-    def toLaTeX(self) -> list[tuple[int, str]]:
+    def toLaTeX(self) -> List[Tuple[int, str]]:
         indent = 1
 
-        spans: set[int] = set([_[0].whitespace_span for _ in self.listitems])
-        spans: list[int] = list(spans)
+        spans: Set[int] = set([_[0].whitespace_span for _ in self.listitems])
+        spans: List[int] = list(spans)
         spans.sort()
-        hierarchies: list[int] = [spans.index(_[0].whitespace_span) for _ in self.listitems]
+        hierarchies: List[int] = [spans.index(_[0].whitespace_span) for _ in self.listitems]
 
-        ret: list[tuple[int, str]] = [(1, r'\begin{itemize}')]
-        cur: list[int] = [0]
+        ret: List[Tuple[int, str]] = [(1, r'\begin{itemize}')]
+        cur: List[int] = [0]
         for _ in range(len(self.listitems)):
             if cur[-1] == hierarchies[_]:
                 ret.append((indent + 1, r'\item ' + texify(' '.join(
@@ -256,19 +259,21 @@ class UnorderedList(Component):
 class OrderedList(Component):
     __symbol_name = 'OrderedList'
 
-    def __init__(self, listitems: list[tuple[sentences.OrderedList, list[sentences.Text]]]):
-        self.listitems: list[tuple[sentences.OrderedList, list[sentences.Text]]] = listitems
+    def __init__(self, listitems: List[Tuple[sentences.OrderedList, List[sentences.Text]]]):
+        self.listitems: List[Tuple[sentences.OrderedList, List[sentences.Text]]] = listitems
 
     @staticmethod
     def parse(parser: Parser) -> 'OrderedList':
-        listitems: list[tuple[sentences.OrderedList, list[sentences.Text]]] = []
+        listitems: List[Tuple[sentences.OrderedList, List[sentences.Text]]] = []
         if not isinstance(parser.peek(), sentences.OrderedList):
             raise ParseError(OrderedList.__symbol_name)
-        while isinstance((ol := parser.peek()), sentences.OrderedList):
+        while isinstance(parser.peek(), sentences.OrderedList):
+            ol = parser.peek()
             assert isinstance(ol, sentences.OrderedList)
             parser.next()
             texts = []
-            while isinstance((text := parser.peek()), sentences.Text):
+            while isinstance(parser.peek(), sentences.Text):
+                text = parser.peek()
                 assert isinstance(text, sentences.Text)
                 texts.append(text)
                 parser.next()
@@ -279,16 +284,16 @@ class OrderedList(Component):
             parser.next()
         return OrderedList(listitems)
 
-    def toLaTeX(self) -> list[tuple[int, str]]:
+    def toLaTeX(self) -> List[Tuple[int, str]]:
         indent = 1
 
-        spans: set[int] = set([_[0].whitespace_span for _ in self.listitems])
-        spans: list[int] = list(spans)
+        spans: Set[int] = set([_[0].whitespace_span for _ in self.listitems])
+        spans: List[int] = list(spans)
         spans.sort()
-        hierarchies: list[int] = [spans.index(_[0].whitespace_span) for _ in self.listitems]
+        hierarchies: List[int] = [spans.index(_[0].whitespace_span) for _ in self.listitems]
 
-        ret: list[tuple[int, str]] = [(1, '\\begin{enumerate}')]
-        cur: list[int] = [0]
+        ret: List[Tuple[int, str]] = [(1, '\\begin{enumerate}')]
+        cur: List[int] = [0]
         for _ in range(len(self.listitems)):
             if cur[-1] == hierarchies[_]:
                 ret.append((indent + 1, '\\item ' + texify(' '.join(
@@ -337,8 +342,8 @@ class PictureImportation(Component):
         assert isinstance(picture, sentences.Picture)
         return PictureImportation(picture)
 
-    def toLaTeX(self) -> list[tuple[int, str]]:
-        ret: list[tuple[int, str]] = []
+    def toLaTeX(self) -> List[Tuple[int, str]]:
+        ret: List[Tuple[int, str]] = []
         ret.append((1, r'\begin{figure}'))
         ret.append((2, r'\includegraphics{' + self.picture.path_to_pic + '}'))
         if self.picture.alt_text is not None and self.picture.alt_text != '':

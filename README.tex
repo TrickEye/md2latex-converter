@@ -11,10 +11,6 @@
 
 	\texttt{md2latex-converter} 是一个将 Markdown 文件转换成 LaTeX 源代码的 Python 工具包。使用了 LaTeX 的 \texttt{ctex} 包，因此对于 中文的编码环境有特别的关照。
 
-	Due to typing system in the source code, this package runs on python newer than 3.10. I will go back to this issue soon.
-
-	由于使用了一些类型系统的语法，这个包现在支持的python版本需要至少在3.10以上，会在不久后解决这个问题。
-
 	\section{Installation and Usage | 安装与使用}
 
 	\texttt{pip install md2latex-converter}
@@ -51,6 +47,11 @@
 				\item \href{https://http.cat/404}{hyperlinks}
 			\end{itemize}
 		\end{itemize}
+		\item \texttt{m2l} does not intend to support:
+		\begin{itemize}
+			\item tables, as writing tables in markdown is not a very swift thing to do.
+			\item html labels, as the target file format is \texttt{.tex} or \texttt{.pdf}, which is not compatible with online stuff.
+		\end{itemize}
 		\item The future versions will focus on equations, codeblocks
 		\item Versions in the more distant future will support DIY markdown grammar and texify methods.
 	\end{itemize}
@@ -70,6 +71,11 @@
 				\item \texttt{代码}片段
 				\item \href{https://http.cat/404}{超链接}
 			\end{itemize}
+		\end{itemize}
+		\item 这个包不计划支持的东西包括
+		\begin{itemize}
+			\item 表格，因为用markdown写表格不是很方便
+			\item html标签，因为目标代码是 \texttt{.tex} 或者 \texttt{.pdf} ，这不是一个很适配在线内容的格式。
 		\end{itemize}
 		\item 未来版本计划支持公式、代码块
 		\item 在更久远的未来，可以支持用户自定义md语法和 texify 方法

@@ -11,10 +11,6 @@ package provided by the LaTeX community.
 源代码的 Python 工具包。使用了 LaTeX 的 `ctex` 包，因此对于
 中文的编码环境有特别的关照。
 
-Due to typing system in the source code, this package runs on python newer than 3.10. I will go back to this issue soon.
-
-由于使用了一些类型系统的语法，这个包现在支持的python版本需要至少在3.10以上，会在不久后解决这个问题。
-
 ## Installation and Usage | 安装与使用
 
 `pip install md2latex-converter`
@@ -58,6 +54,9 @@ The output filename depends on your input, for `foo.md`, m2l will produce `foo.t
     - or something **_bold and italic_**
     - inline `code snippets`
     - [hyperlinks](https://http.cat/404)
+- `m2l` does not intend to support:
+  - tables, as writing tables in markdown is not a very swift thing to do.
+  - html labels, as the target file format is `.tex` or `.pdf`, which is not compatible with online stuff.
 - The future versions will focus on equations, codeblocks
 - Versions in the more distant future will support DIY markdown grammar and texify methods.
 
@@ -72,5 +71,8 @@ The output filename depends on your input, for `foo.md`, m2l will produce `foo.t
     - **_又粗又斜_** 的文本（你为什么要这样干）
     - `代码`片段
     - [超链接](https://http.cat/404)
+- 这个包不计划支持的东西包括
+  - 表格，因为用markdown写表格不是很方便
+  - html标签，因为目标代码是 `.tex` 或者 `.pdf` ，这不是一个很适配在线内容的格式。
 - 未来版本计划支持公式、代码块
 - 在更久远的未来，可以支持用户自定义md语法和 texify 方法

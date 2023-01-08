@@ -1,9 +1,11 @@
 import re
 
+from typing import List
+
 from md2latex_converter.sentences import *
 
 
-def lex(input_string: str) -> list[Sentence]:
+def lex(input_string: str) -> List[Sentence]:
     """
     A general lexer for each line of the source .md file.
 
