@@ -1,6 +1,5 @@
 import os
 import sys
-from tkinter import filedialog
 from typing import Callable, List
 
 from md2latex_converter import configurehandler, helpme, io_handler, workflow
@@ -61,8 +60,11 @@ class Cmd:
 
         if input_from_pastebin:  # read from pastebin and compile it to tex
             if output_filename is None or output_filename == '':
-                output_filename = filedialog.asksaveasfilename()
-
+                try:
+                    from tkinter import filedialog
+                    output_filename = filedialog.asksaveasfilename()
+                except ModuleNotFoundError:
+                    output_filename = input('Please provide a filename, or cancel by pressing ENTER:')
             if output_filename is not None and output_filename != '':
                 _warn_ifnot(output_filename.endswith('.tex'),
                             f'output file name {output_filename} does not seem to be a LaTeX file.')
