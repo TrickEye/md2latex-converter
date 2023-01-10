@@ -17,3 +17,5 @@ out/*
 *.out
 
 *.log
+
+/test/
