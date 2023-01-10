@@ -19,31 +19,43 @@ Due to typing system in the source code, this package runs on python newer than 
 
 `pip install md2latex-converter`
 
-This will install the package into your current python 
-interpreter. The installation will add `m2l.exe` into 
-the `Scripts` folder of python (on Windows) or `m2l` 
-into `~/.local/bin/` by default (on Linux), if you have 
-previously added the path above into your system PATH 
-variable, you should be able to invoke the program 
-through the command `m2l`.
+This will install the package into your current python interpreter. 
 
-这会在现有的 Python 解释器中安装此包。安装过程中会将 `m2l.exe` 安装在
-当前的 Python 的 `Scripts` 路径（Windows）或默认将 `m2l` 安装到 
-`~/.local/bin/` 路径（Linux）。如果此前已经将这个路径加入了 PATH 变量，
-那么可以通过 `m2l` 指令来运行此程序。
+这会在现有的 Python 解释器中安装此包。
 
 `m2l file.md`
 
-This will read and convert the content in `file.md` into `file.tex`
-at the current working directory. After the conversion, use `xelatex file`
-to produce a `.pdf` file from the LaTeX source code.
+This will read and convert the content in `file.md` into `file.tex` at the current working directory. 
+
+After the conversion, use `xelatex file` to produce a `.pdf` file from the LaTeX source code.
 
 The output filename depends on your input, for `foo.md`, m2l will produce `foo.tex`
 
-这会读取并转换 `file.md` 的内容到当前工作路径的 `file.tex` 文件。在此之后，可以使用
-`xelatex file` 来编译产生 pdf
+这会读取并转换 `file.md` 的内容到当前工作路径的 `file.tex` 文件。在此之后，可以使用 `xelatex file` 来编译产生 pdf
 
 输出的文件名由命令输入决定，对 `foo.md` 的转换会产生 `foo.tex`
+
+## Command line arguments | 命令行参数
+
+`m2l <input-filename.md> [ '-o' <output-filename.tex> ]`
+
+Reads from `input-filename.md` and will output the target LaTeX file into file `output-filename.tex`. If output filename
+is not given, the default output filename will be `input-filename.tex`
+
+从文件 `input-filename.md` 读取文本，将生成的目标代码存储在 `output-filename.tex`。如果输出文件名没有给出，默认输出文件名为 `input-filename.tex`
+
+`m2l -pb [ '-o' <output-filename.tex> ]`
+
+Reads from your pastebin and will output the target LaTeX file into your pastebin, **as well as** a file 
+`output-filename.tex`. If output filename is not given, the program will open a new window to ask for a filename to save
+into. This dialog can be canceled, in which case no output file will be produced, only pastebin.
+
+从剪切板读取文本，将生成的目标代码存储在剪切板，同时将一份拷贝存储在 `output-filename.tex`。如果输出文件名没有给出，将会弹出窗口询问存储文件名，
+这个过程可以被取消，这种情况下不会产生输出文件，目标代码只会留在剪切板。
+
+This feature needs pyperclip.
+
+这个功能需要 pyperclip。
 
 ## Current progress and plans | 进度，安排
 

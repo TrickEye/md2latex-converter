@@ -7,7 +7,7 @@ upload command (using twine):
     `twine upload dist/*`
 """
 
-VERSION = "0.0.6"
+VERSION = "0.0.6.1"
 
 with open('LICENSE.txt', 'r', encoding='utf-8') as f:
     LICENSE = f.read()
@@ -26,6 +26,7 @@ setuptools.setup(
         'console_scripts': ['m2l = md2latex_converter.__main__:main', ]
     },
     python_requires='>=3.10',
+    install_requires="pyperclip",
     license=LICENSE,
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown'
