@@ -1,4 +1,3 @@
-def help():
-    # todo
+def handler():
     print('hello world')
-    assert False, 'help not implemented'
+    # assert False, 'help not implemented'
