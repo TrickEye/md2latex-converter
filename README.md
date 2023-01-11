@@ -53,9 +53,10 @@ into. This dialog can be canceled, in which case no output file will be produced
 从剪切板读取文本，将生成的目标代码存储在剪切板，同时将一份拷贝存储在 `output-filename.tex`。如果输出文件名没有给出，将会弹出窗口询问存储文件名，
 这个过程可以被取消，这种情况下不会产生输出文件，目标代码只会留在剪切板。
 
-This feature needs pyperclip.
+This feature is quite handy, especially when you intend to convert something on the internet, in Typora, Notion or Obsidian. 
+But be aware that this feature needs pyperclip.
 
-这个功能需要 pyperclip。
+这个功能对于需要转换在网上，或者 Typora, Notion, Obsidian 里面的内容时比较好用。不过这个功能需要 pyperclip。
 
 ## Current progress and plans | 进度，安排
 
