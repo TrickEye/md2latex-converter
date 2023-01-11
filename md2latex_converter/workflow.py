@@ -12,10 +12,12 @@ def process(s):
     return result
 
 
-def work(provider: Callable[[], str], consumer: list[Callable[[str], None]]) -> Callable[[], None]:
+def worker_generator(provider: Callable[[], str], consumers: list[Callable[[str], None]]) -> Callable[[], None]:
     def _r():
         src = provider()
         tar = process(src)
-        for _ in consumer:
-            _(tar)
+        map(lambda _: _(tar), consumers)
+        # for _ in consumers:
+        #     _(tar)
+
     return _r

@@ -85,7 +85,7 @@ class Cmd:
         elif self.help_me:
             self.handler = helpme.help
         else:
-            self.handler = workflow.work(self._provider, self._consumer)
+            self.handler = workflow.worker_generator(self._provider, self._consumer)
 
     def __str__(self):
         if self.configure:
