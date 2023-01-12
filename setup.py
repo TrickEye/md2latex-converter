@@ -7,7 +7,7 @@ upload command (using twine):
     `twine upload dist/*`
 """
 
-VERSION = "0.0.6.3"
+from md2latex_converter.version import VERSION
 
 with open('LICENSE.txt', 'r', encoding='utf-8') as f:
     LICENSE = f.read()
