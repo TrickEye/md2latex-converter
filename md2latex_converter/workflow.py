@@ -1,12 +1,12 @@
 from typing import Callable
 
 from md2latex_converter import regexlexer
-from md2latex_converter.parser import Parser
+from md2latex_converter.parser import Tokenizer
 
 
 def process(s):
     sentences_list = regexlexer.lex(s)
-    document = Parser(sentences_list).parse()
+    document = Tokenizer(sentences_list).parse()
     latexes = document.toLaTeX()
     result = ''.join([('\t' * _[0] + _[1] + '\n') for _ in latexes])
     return result
