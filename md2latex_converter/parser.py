@@ -5,23 +5,21 @@ Markdown Grammar used in this project is listed as follows:
     Document:
         (Component)* [sentence.eof]
     Components:
-        (TitleBlock) | (PlainText) | (UnorderedList) | (OrderedList) | (PictureImportation) | [sentence.emptySentence]
+        (TitleBlock) | (PlainText) | (ULBlock) | (OLBlock) | (PictureImportation) | [sentence.emptySentence]
     TitleBlock:
         [sentence.title]
     PlainText:
         [sentence.text]* [sentence.emptySentence]+
-    UnorderedList:
+    ULBlock:
         ([sentence.unorderedList] [sentence.text]* )* [sentence.emptySentence]+
-    OrderedList:
+    OLBlock:
         ([sentence.orderedList] [sentence.text]* )* [sentence.emptySentence]+
     PictureImportation:
         [sentence.orderedList] [sentence.emptySentence]+
 """
 
-from md2latex_converter.error import ParseError
-from md2latex_converter import sentences
 from md2latex_converter.inline import texify
-from md2latex_converter.sentences import Sentence, Eof, Title, Text
+from md2latex_converter.sentences import *
 
 
 class Tokenizer:
@@ -43,7 +41,7 @@ class Tokenizer:
 
     def next(self) -> Sentence:
         self._index += 1
-        self._peek_token = self._sentences[self._index] if self._index < self._length else sentences.Eof(self._index)
+        self._peek_token = self._sentences[self._index] if self._index < self._length else Eof(self._index)
         return self._peek_token
 
     @property
@@ -64,6 +62,8 @@ class NonTerminatingSymbol:
 
 
 class Document(NonTerminatingSymbol):
+    components: list['Component']
+
     __symbol_name = 'Document'
 
     def __init__(self, components: list['Component']):
@@ -72,11 +72,13 @@ class Document(NonTerminatingSymbol):
     @staticmethod
     def parse(tokenizer: Tokenizer) -> 'Document':
         components: list['Component'] = []
-        while not isinstance(tokenizer.peek, sentences.Eof):
-            component: Component = Component.parse(tokenizer)
-            if component is not None:
+
+        while not isinstance(tokenizer.peek, Eof):
+            if (component := Component.parse(tokenizer)) is not None:
                 components.append(component)
+
         assert isinstance(tokenizer.peek, Eof), f'expected EOF in line {tokenizer.line}'
+
         return Document(components)
 
     def toLaTeX(self) -> list[tuple[int, str]]:
@@ -125,23 +127,25 @@ class Component(NonTerminatingSymbol):
             return TitleBlock.parse(tokenizer)
         elif isinstance(tokenizer.peek, Text):
             return PlainText.parse(tokenizer)
-        elif isinstance(tokenizer.peek, sentences.UnorderedList):
-            return UnorderedList.parse(tokenizer)
-        elif isinstance(tokenizer.peek, sentences.OrderedList):
-            return OrderedList.parse(tokenizer)
-        elif isinstance(tokenizer.peek, sentences.EmptySentence):
+        elif isinstance(tokenizer.peek, UnorderedList):
+            return ULBlock.parse(tokenizer)
+        elif isinstance(tokenizer.peek, OrderedList):
+            return OLBlock.parse(tokenizer)
+        elif isinstance(tokenizer.peek, EmptySentence):
             tokenizer.next()
             return None
-        elif isinstance(tokenizer.peek, sentences.Picture):
+        elif isinstance(tokenizer.peek, Picture):
             return PictureImportation.parse(tokenizer)
         else:
-            assert False, f'm2l did not support this sentence type'
+            assert False, f'm2l did not support this sentence type {type(tokenizer.peek)}'
 
     def toLaTeX(self) -> list[tuple[int, str]]:
         pass
 
 
 class TitleBlock(Component):
+    title: Title
+
     __symbol_name = 'TitleBlock'
     labels: list[str] = [
         '',
@@ -155,16 +159,16 @@ class TitleBlock(Component):
 
     def __init__(self, title: Sentence):
         assert isinstance(title, Title)
-        self.title: Title = title
+        self.title = title
 
     @staticmethod
     def parse(tokenizer: Tokenizer) -> 'TitleBlock':
-        if not isinstance(tokenizer.peek, Title):
-            raise ParseError(TitleBlock.__symbol_name)
-        else:
-            title: Sentence = tokenizer.peek
-            tokenizer.next()
-            return TitleBlock(title)
+        assert isinstance(tokenizer.peek, Title), f'missing Title in line {tokenizer.line}'
+
+        title = tokenizer.peek
+        tokenizer.next()
+
+        return TitleBlock(title)
 
     def toLaTeX(self) -> list[tuple[int, str]]:
         if self.title.hierarchy == 1:
@@ -175,56 +179,60 @@ class TitleBlock(Component):
 
 
 class PlainText(Component):
+    texts: list[Text]
     __symbol_name = 'PlainText'
 
-    def __init__(self, texts: list[sentences.Text]):
-        self.texts: list[sentences.Text] = texts
+    def __init__(self, texts: list[Text]):
+        self.texts = texts
 
     @staticmethod
     def parse(tokenizer: Tokenizer):
-        texts: list[sentences.Text] = []
-        if not isinstance(tokenizer.peek, sentences.Text):
-            raise ParseError(PlainText.__symbol_name)
-        while isinstance(tokenizer.peek, sentences.Text):
-            temp = tokenizer.peek
-            assert isinstance(temp, sentences.Text)
+        texts: list[Text] = []
+
+        assert isinstance(tokenizer.peek, Text), f'missing Text in line {tokenizer.line}'
+        while isinstance((temp := tokenizer.peek), Text):
+            assert isinstance(temp, Text)
             texts.append(temp)
             tokenizer.next()
-        if not isinstance(tokenizer.peek, sentences.EmptySentence):
-            raise ParseError(PlainText.__symbol_name)
-        while isinstance(tokenizer.peek, sentences.EmptySentence):
+
+        assert isinstance(tokenizer.peek, EmptySentence), f'missing EmptySentence in line {tokenizer.line}'
+        while isinstance(tokenizer.peek, EmptySentence):
             tokenizer.next()
+
         return PlainText(texts)
 
     def toLaTeX(self) -> list[tuple[int, str]]:
-        return [(1, texify(' '.join([text.content.strip() for text in self.texts])))]
+        return [(1, ' '.join([texify(text.content.strip()) for text in self.texts]))]
 
 
-class UnorderedList(Component):
-    __symbol_name = 'UnorderedList'
+class ULBlock(Component):
+    listitems: list[tuple[UnorderedList, list[Text]]]
 
-    def __init__(self, listitems: list[tuple[sentences.UnorderedList, list[sentences.Text]]]):
-        self.listitems: list[tuple[sentences.UnorderedList, list[sentences.Text]]] = listitems
+    __symbol_name = 'ULBlock'
+
+    def __init__(self, listitems: list[tuple[UnorderedList, list[Text]]]):
+        self.listitems = listitems
 
     @staticmethod
-    def parse(tokenizer: Tokenizer) -> 'UnorderedList':
-        listitems: list[tuple[sentences.UnorderedList, list[sentences.Text]]] = []
-        if not isinstance(tokenizer.peek, sentences.UnorderedList):
-            raise ParseError(UnorderedList.__symbol_name)
-        while isinstance((ul := tokenizer.peek), sentences.UnorderedList):
-            assert isinstance(ul, sentences.UnorderedList)
+    def parse(tokenizer: Tokenizer) -> 'ULBlock':
+        listitems: list[tuple[UnorderedList, list[Text]]] = []
+
+        assert isinstance(tokenizer.peek, UnorderedList), f'missing UnorderedList in line {tokenizer.line}'
+        while isinstance((ul := tokenizer.peek), UnorderedList):
+            assert isinstance(ul, UnorderedList)
             tokenizer.next()
             texts = []
-            while isinstance((text := tokenizer.peek), sentences.Text):
-                assert isinstance(text, sentences.Text)
+            while isinstance((text := tokenizer.peek), Text):
+                assert isinstance(text, Text)
                 texts.append(text)
                 tokenizer.next()
             listitems.append((ul, texts))
-        if not isinstance(tokenizer.peek, sentences.EmptySentence):
-            raise ParseError(UnorderedList.__symbol_name)
-        while isinstance(tokenizer.peek, sentences.EmptySentence):
+
+        assert isinstance(tokenizer.peek, EmptySentence), f'missing EmptySentence in line {tokenizer.line}'
+        while isinstance(tokenizer.peek, EmptySentence):
             tokenizer.next()
-        return UnorderedList(listitems)
+
+        return ULBlock(listitems)
 
     def toLaTeX(self) -> list[tuple[int, str]]:
         indent = 1
@@ -265,31 +273,34 @@ class UnorderedList(Component):
         return ret
 
 
-class OrderedList(Component):
-    __symbol_name = 'OrderedList'
+class OLBlock(Component):
+    listitems: list[tuple[OrderedList, list[Text]]]
 
-    def __init__(self, listitems: list[tuple[sentences.OrderedList, list[sentences.Text]]]):
-        self.listitems: list[tuple[sentences.OrderedList, list[sentences.Text]]] = listitems
+    __symbol_name = 'OLBlock'
+
+    def __init__(self, listitems: list[tuple[OrderedList, list[Text]]]):
+        self.listitems = listitems
 
     @staticmethod
-    def parse(tokenizer: Tokenizer) -> 'OrderedList':
-        listitems: list[tuple[sentences.OrderedList, list[sentences.Text]]] = []
-        if not isinstance(tokenizer.peek, sentences.OrderedList):
-            raise ParseError(OrderedList.__symbol_name)
-        while isinstance((ol := tokenizer.peek), sentences.OrderedList):
-            assert isinstance(ol, sentences.OrderedList)
+    def parse(tokenizer: Tokenizer) -> 'OLBlock':
+        listitems: list[tuple[OrderedList, list[Text]]] = []
+
+        assert isinstance(tokenizer.peek, OrderedList), f'missing OrderedList in line {tokenizer.line}'
+        while isinstance((ol := tokenizer.peek), OrderedList):
+            assert isinstance(ol, OrderedList)
             tokenizer.next()
             texts = []
-            while isinstance((text := tokenizer.peek), sentences.Text):
-                assert isinstance(text, sentences.Text)
+            while isinstance((text := tokenizer.peek), Text):
+                assert isinstance(text, Text)
                 texts.append(text)
                 tokenizer.next()
             listitems.append((ol, texts))
-        if not isinstance(tokenizer.peek, sentences.EmptySentence):
-            raise ParseError(OrderedList.__symbol_name)
-        while isinstance(tokenizer.peek, sentences.EmptySentence):
+
+        assert isinstance(tokenizer.peek, EmptySentence), f'missing EmptySentence in line {tokenizer.line}'
+        while isinstance(tokenizer.peek, EmptySentence):
             tokenizer.next()
-        return OrderedList(listitems)
+
+        return OLBlock(listitems)
 
     def toLaTeX(self) -> list[tuple[int, str]]:
         indent = 1
@@ -331,22 +342,24 @@ class OrderedList(Component):
 
 
 class PictureImportation(Component):
+    picture: Picture
+
     __symbol_name = 'PictureImportation'
 
-    def __init__(self, picture: sentences.Picture):
-        self.picture: sentences.Picture = picture
+    def __init__(self, picture: Picture):
+        self.picture: Picture = picture
 
     @staticmethod
     def parse(tokenizer: Tokenizer) -> 'PictureImportation':
-        if not isinstance(tokenizer.peek, sentences.Picture):
-            raise ParseError(PictureImportation.__symbol_name)
-        picture: sentences.Sentence = tokenizer.peek
+        assert isinstance(tokenizer.peek, Picture), f'missing Picture in line {tokenizer.line}'
+        picture = tokenizer.peek
         tokenizer.next()
-        if not isinstance(tokenizer.peek, sentences.EmptySentence):
-            raise ParseError(PictureImportation.__symbol_name)
-        while isinstance(tokenizer.peek, sentences.EmptySentence):
+
+        assert isinstance(tokenizer.peek, EmptySentence), f'missing EmptySentence in line {tokenizer.line}'
+        while isinstance(tokenizer.peek, EmptySentence):
             tokenizer.next()
-        assert isinstance(picture, sentences.Picture)
+
+        assert isinstance(picture, Picture)
         return PictureImportation(picture)
 
     def toLaTeX(self) -> list[tuple[int, str]]:
