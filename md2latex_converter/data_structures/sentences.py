@@ -1,19 +1,6 @@
 import re
-from typing import Any
 
-
-class Sentence:
-    line: int
-    identifier: str
-    content: str
-
-    def __init__(self, index: int, identifier: str, content: str):
-        self.line = index + 1
-        self.identifier = identifier
-        self.content = content
-
-    def __str__(self):
-        return f'@ line {self.line:<4} {self.identifier:<20} -- {self.content}'
+from md2latex_converter.data_structures.prototypes import Sentence
 
 
 class Title(Sentence):
