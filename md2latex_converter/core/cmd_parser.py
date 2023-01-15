@@ -2,7 +2,7 @@ import os
 import sys
 from typing import Callable, List
 
-from md2latex_converter import configurehandler, helpme, io_handler, workflow
+from md2latex_converter.core import workflow, helpme, io_handler, configurehandler
 
 
 def _warn_ifnot(expr, s):

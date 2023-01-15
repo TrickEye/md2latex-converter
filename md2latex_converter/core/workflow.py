@@ -1,7 +1,7 @@
 from typing import Callable
 
-from md2latex_converter import regexlexer
-from md2latex_converter.parser import Tokenizer
+from md2latex_converter.core import regexlexer
+from md2latex_converter.core.parser import Tokenizer
 
 
 def process(s):

@@ -1,6 +1,4 @@
-import re
-
-from md2latex_converter.sentences import *
+from md2latex_converter.core.sentences import *
 
 
 def lex(input_string: str) -> list[Sentence]:

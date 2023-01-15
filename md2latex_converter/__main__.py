@@ -1,5 +1,4 @@
-from md2latex_converter.cmd_parser import parse_command, Cmd
-
+from md2latex_converter.core.cmd_parser import parse_command, Cmd
 
 def main() -> None:
     cmd: Cmd = parse_command()

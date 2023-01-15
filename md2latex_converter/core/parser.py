@@ -18,8 +18,8 @@ Markdown Grammar used in this project is listed as follows:
         [sentence.orderedList] [sentence.emptySentence]+
 """
 
-from md2latex_converter.inline import texify
-from md2latex_converter.sentences import *
+from md2latex_converter.core.inline import texify
+from md2latex_converter.core.sentences import *
 
 
 class Tokenizer:
