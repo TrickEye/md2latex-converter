@@ -1,6 +1,3 @@
-from md2latex_converter.core.block_parser import Tokenizer
-
-
 class Sentence:
     line: int
     identifier: str
@@ -17,7 +14,7 @@ class Sentence:
 
 class Block:
     @staticmethod
-    def parse(tokenizer: Tokenizer):
+    def parse(tokenizer):
         pass
 
     def toLaTeX(self) -> list[tuple[int, str]]:

@@ -81,9 +81,9 @@ class Cmd:
         self.output_to_stdout = output_to_stdout
 
         if self.configure:
-            self.handler = configurehandler.config
+            self.handler = configure_handler.config
         elif self.help_me:
-            self.handler = helpme.handler
+            self.handler = helpme_handler.handler
         else:
             self.handler = workflow.worker_generator(self._provider, self._consumer)
 
