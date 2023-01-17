@@ -2,8 +2,6 @@ import os
 import sys
 from typing import Callable, List
 
-from md2latex_converter.core import workflow, helpme_handler, io_handler, configure_handler
-
 
 def _warn_ifnot(expr, s):
     if not expr:
@@ -12,7 +10,6 @@ def _warn_ifnot(expr, s):
 
 
 class Cmd:
-
     handler: Callable[[], None]
     output_to_stdout: bool
     help_me: bool
@@ -80,12 +77,15 @@ class Cmd:
         self.help_me = help_me
         self.output_to_stdout = output_to_stdout
 
+        from md2latex_converter.core.configure_handler import config
+        from md2latex_converter.core.helpme_handler import handler
+        from md2latex_converter.core.workflow import worker_generator
         if self.configure:
-            self.handler = configure_handler.config
+            self.handler = config
         elif self.help_me:
-            self.handler = helpme_handler.handler
+            self.handler = handler
         else:
-            self.handler = workflow.worker_generator(self._provider, self._consumer)
+            self.handler = worker_generator(self._provider, self._consumer)
 
     def __str__(self):
         if self.configure:
@@ -102,6 +102,7 @@ class Cmd:
 
     @property
     def _consumer(self) -> List[Callable[[str], None]]:
+        from md2latex_converter.core import io_handler
         _r: List[Callable[[str], None]] = []
         if self.output_filename is not None and self.output_filename != '':
             _r.append(io_handler.write_to_file_generator(self.output_filename))
@@ -113,6 +114,7 @@ class Cmd:
 
     @property
     def _provider(self) -> Callable[[], str]:
+        from md2latex_converter.core import io_handler
         if self.input_filename:
             return io_handler.read_from_file_generator(self.input_filename)
         else:

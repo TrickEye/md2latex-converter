@@ -10,7 +10,7 @@ class Title(Sentence):
     def __init__(self, line: int, content: str):
         super().__init__(line, 'Title', content)
         self.hierarchy = len(re.match(r'(#+)', content).group())
-        self.title_name = re.match(r'#+\s+(.*)$', content).group(1)
+        self.title_name = re.match(r'#+\s*(.*)$', content).group(1)
 
 
 class Text(Sentence):

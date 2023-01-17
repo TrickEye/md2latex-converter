@@ -17,8 +17,6 @@ Markdown Grammar used in this project is listed as follows:
     PictureImportation:
         [sentence.orderedList] [sentence.emptySentence]+
 """
-
-from md2latex_converter.data_structures.blocks import Document
 from md2latex_converter.data_structures.sentences import *
 
 
@@ -48,7 +46,7 @@ class Tokenizer:
     def line(self) -> int:
         return self._index + 1
 
-    def parse(self) -> 'Document':
-        return Document.parse(self)
+    # def parse(self) -> 'Document':
+    #     return Document.parse(self)
 
 
