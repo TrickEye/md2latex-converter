@@ -1,4 +1,4 @@
-from md2latex_converter.core.block_parser import Tokenizer
+from md2latex_converter.core.tokenizer import Tokenizer
 from md2latex_converter.core.inline import texify
 from md2latex_converter.data_structures.prototypes import Block
 from md2latex_converter.data_structures.sentences import *

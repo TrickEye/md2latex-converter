@@ -53,4 +53,6 @@ def lex(input_string: str) -> list[Sentence]:
                 ret.append(Picture(_, sentence))
             elif re.match(r'^.*$', sentence) is not None:
                 ret.append(Text(_, sentence))
+            else:
+                assert False, f'This is impossible'
     return ret

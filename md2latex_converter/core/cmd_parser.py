@@ -47,6 +47,9 @@ class Cmd:
             _warn_ifnot(input_filename.endswith('.md'),
                         f'input file name {input_filename} does not seem to be a MarkDown file.')
 
+            if extension_filename is not None or extension_filename != '':
+                assert extension_filename.endswith('.json'), f'extension should be a json file!'
+
             if output_filename is None or output_filename == '':
                 output_filename = os.path.basename(input_filename)
                 if output_filename.endswith('.md'):
@@ -66,8 +69,12 @@ class Cmd:
                 try:
                     from tkinter import filedialog
                     output_filename = filedialog.asksaveasfilename()
-                except ModuleNotFoundError:
+                except ImportError:
                     output_filename = input('Please provide a filename, or cancel by pressing ENTER:')
+
+            if extension_filename is not None or extension_filename != '':
+                assert extension_filename.endswith('.json'), f'extension should be a json file!'
+
             if output_filename is not None and output_filename != '':
                 _warn_ifnot(output_filename.endswith('.tex'),
                             f'output file name {output_filename} does not seem to be a LaTeX file.')

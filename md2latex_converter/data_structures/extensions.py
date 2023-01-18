@@ -58,6 +58,7 @@ class SentExt:
 
     def __init__(self, name: str, regex: str):
         assert name not in SentExt.name_map.keys(), f'Name {name} is already used!'
+        assert name not in ['Title', 'Text', 'EmptySentence', 'UnorderedList', 'OrderedList', 'EOF', 'Picture'], f'choose another name please.'
 
         self.identifier = name
         self.regex = regex
