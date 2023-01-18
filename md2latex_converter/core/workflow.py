@@ -9,18 +9,22 @@ def process(s):
     sentences_list = sentence_parser.lex(s)
     tokenizer = Tokenizer(sentences_list)
     document = Document.parse(tokenizer)
-    # document = Tokenizer(sentences_list).parse()
     latexes = document.toLaTeX()
     result = ''.join([('\t' * _[0] + _[1] + '\n') for _ in latexes])
     return result
 
 
-def worker_generator(provider: Callable[[], str], consumers: list[Callable[[str], None]]) -> Callable[[], None]:
+def worker_generator(
+        extension_handler: Callable[[], list],
+        provider: Callable[[], str],
+        consumers: list[Callable[[str], None]]
+) -> Callable[[], None]:
     def _r():
+        ext = extension_handler()
         src = provider()
         tar = process(src)
-        map(lambda _: _(tar), consumers)
-        # for _ in consumers:
-        #     _(tar)
+        # map(lambda _: _(tar), consumers)
+        for _ in consumers:
+            _(tar)
 
     return _r

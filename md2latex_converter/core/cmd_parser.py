@@ -3,6 +3,11 @@ import sys
 from typing import Callable, List
 
 
+from md2latex_converter.core.configure_handler import config
+from md2latex_converter.core.helpme_handler import handler
+from md2latex_converter.core.workflow import worker_generator
+
+
 def _warn_ifnot(expr, s):
     if not expr:
         print('Warning! ' + s, file=sys.stderr)
@@ -24,11 +29,12 @@ class Cmd:
                  input_from_pastebin: bool,
                  configure: bool,
                  help_me: bool,
-                 output_to_stdout: bool
+                 output_to_stdout: bool,
+                 extension_filename: str = ''
                  ):
-        assert not (configure and (input_filename or output_filename or input_from_pastebin or help_me)), \
+        assert not (configure and (input_filename or output_filename or input_from_pastebin or help_me or output_to_stdout or extension_filename)), \
             '"m2l configure" does not accept other arguments.'
-        assert not (help_me and (input_filename or output_filename or input_from_pastebin or configure)), \
+        assert not (help_me and (input_filename or output_filename or input_from_pastebin or configure or output_to_stdout or extension_filename)), \
             '"m2l help" does not accept other arguments.'
         assert not (input_filename and input_from_pastebin), \
             '"m2l" does not support multiple sources of input.'
@@ -76,16 +82,14 @@ class Cmd:
         self.configure = configure
         self.help_me = help_me
         self.output_to_stdout = output_to_stdout
+        self.extension_filename = extension_filename
 
-        from md2latex_converter.core.configure_handler import config
-        from md2latex_converter.core.helpme_handler import handler
-        from md2latex_converter.core.workflow import worker_generator
         if self.configure:
             self.handler = config
         elif self.help_me:
             self.handler = handler
         else:
-            self.handler = worker_generator(self._provider, self._consumer)
+            self.handler = worker_generator(self._extension_handler, self._provider, self._consumer)
 
     def __str__(self):
         if self.configure:
@@ -99,6 +103,14 @@ class Cmd:
                 return f'm2l -pb'
             else:
                 return f'm2l -pb -o {self.output_filename}'
+
+    @property
+    def _extension_handler(self) -> Callable[[], list]:
+        from md2latex_converter.core import io_handler
+        if self.extension_filename is not None and self.extension_filename != '':
+            return io_handler.load_extension_from_json_generator(self.extension_filename)
+        else:
+            return lambda: []
 
     @property
     def _consumer(self) -> List[Callable[[str], None]]:
