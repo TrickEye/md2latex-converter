@@ -29,14 +29,14 @@ class Cmd:
                  configure: bool,
                  help_me: bool,
                  output_to_stdout: bool,
-                 extension_filename: str = '',
+                 sent_ext_filename: str = '',
                  blk_ext_filename: str = ''
                  ):
         assert not (configure and (
-                    input_filename or output_filename or input_from_pastebin or help_me or output_to_stdout or extension_filename or blk_ext_filename)), \
+                input_filename or output_filename or input_from_pastebin or help_me or output_to_stdout or sent_ext_filename or blk_ext_filename)), \
             '"m2l configure" does not accept other arguments.'
         assert not (help_me and (
-                    input_filename or output_filename or input_from_pastebin or configure or output_to_stdout or extension_filename or blk_ext_filename)), \
+                input_filename or output_filename or input_from_pastebin or configure or output_to_stdout or sent_ext_filename or blk_ext_filename)), \
             '"m2l help" does not accept other arguments.'
         assert not (input_filename and input_from_pastebin), \
             '"m2l" does not support multiple sources of input.'
@@ -49,8 +49,8 @@ class Cmd:
             _warn_ifnot(input_filename.endswith('.md'),
                         f'input file name {input_filename} does not seem to be a MarkDown file.')
 
-            if extension_filename is not None and extension_filename != '':
-                assert extension_filename.endswith('.json'), f'extension {extension_filename} should be a json file!'
+            if sent_ext_filename is not None and sent_ext_filename != '':
+                assert sent_ext_filename.endswith('.json'), f'extension {sent_ext_filename} should be a json file!'
 
             if output_filename is None or output_filename == '':
                 output_filename = os.path.basename(input_filename)
@@ -75,8 +75,8 @@ class Cmd:
                     filedialog = None  # to supress pycharm warnings
                     output_filename = input('Please provide a filename, or cancel by pressing ENTER:')
 
-            if extension_filename is not None and extension_filename != '':
-                assert extension_filename.endswith('.json'), f'extension should be a json file!'
+            if sent_ext_filename is not None and sent_ext_filename != '':
+                assert sent_ext_filename.endswith('.json'), f'extension should be a json file!'
 
             if output_filename is not None and output_filename != '':
                 _warn_ifnot(output_filename.endswith('.tex'),
@@ -92,7 +92,7 @@ class Cmd:
         self.configure = configure
         self.help_me = help_me
         self.output_to_stdout = output_to_stdout
-        self.extension_filename = extension_filename
+        self.sent_ext_filename = sent_ext_filename
         self.blk_ext_filename = blk_ext_filename
 
         if self.configure:
@@ -123,8 +123,8 @@ class Cmd:
     @property
     def _sent_extension_handler(self) -> Callable[[], list]:
         from md2latex_converter.core import io_handler
-        if self.extension_filename is not None and self.extension_filename != '':
-            return io_handler.load_sent_ext_from_json_generator(self.extension_filename)
+        if self.sent_ext_filename is not None and self.sent_ext_filename != '':
+            return io_handler.load_sent_ext_from_json_generator(self.sent_ext_filename)
         else:
             return lambda: []
 
@@ -170,6 +170,8 @@ def _parse_command(args) -> Cmd:
     configure = False
     help_me = True if argc == 1 else False
     output_to_stdout = False
+    sent_ext_filename = ''
+    blk_ext_filename = ''
 
     while i < argc:
         temp = args[i]
@@ -187,6 +189,20 @@ def _parse_command(args) -> Cmd:
 
             i += 1
 
+        elif temp in ['-eS', '--eS', '-es', '--es']:
+            assert i + 1 < argc, f'-e symbol without filename, try "m2l foo.md -eS sent_ext.json".'
+
+            sent_ext_filename = args[i + 1]
+
+            i += 1
+
+        elif temp in ['-eB', '--eB', '-eb', '--eb']:
+            assert i + 1 < argc, f'-e symbol without filename, try "m2l foo.md -eB blk_ext.json".'
+
+            blk_ext_filename = args[i + 1]
+
+            i += 1
+
         elif temp in ['-pb', '--pb', '-p', '--p', 'pastebin', '--pastebin']:
             input_from_pastebin = True
 
@@ -198,24 +214,5 @@ def _parse_command(args) -> Cmd:
 
         i += 1
 
-    return Cmd(
-        input_filename,
-        output_filename,
-        input_from_pastebin,
-        configure,
-        help_me,
-        output_to_stdout
-    )
-
-
-if __name__ == '__main__':
-    cmd = Cmd(r'D:\OneDrive\Study\TimeNotSpecified\python\md2latex\README.md',
-              r'D:\OneDrive\Study\TimeNotSpecified\python\md2latex\README1.tex',
-              input_from_pastebin=False,
-              configure=False,
-              help_me=False,
-              output_to_stdout=False,
-              extension_filename=r'D:\OneDrive\Study\TimeNotSpecified\python\md2latex\md2latex_converter\data_structures\sentence_extensions.json',
-              blk_ext_filename=r'D:\OneDrive\Study\TimeNotSpecified\python\md2latex\md2latex_converter\data_structures\block_extensions.json')
-
-    cmd.handler()
+    return Cmd(input_filename, output_filename, input_from_pastebin, configure, help_me, output_to_stdout,
+               sent_ext_filename, blk_ext_filename)
