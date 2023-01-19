@@ -9,7 +9,8 @@
     ],
     "toLaTeX": [
       "\n",
-      "\\noindent\\rule{\\textwidth}{1pt}"
+      "\\noindent\\rule{\\textwidth}{1pt}",
+      "\n"
     ]
   },
   {

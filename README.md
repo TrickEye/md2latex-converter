@@ -1,8 +1,6 @@
 # `md2latex-converter` introduction 
 
-```
-hello world!
-```
+---
 
 > `pip install md2latex-converter`
 

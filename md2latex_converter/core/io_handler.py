@@ -35,24 +35,11 @@ def write_to_stdout(s) -> None:
 
 def load_sent_ext_from_json_generator(filename: str) -> Callable[[], list]:
     def __r():
-        # _r = []
         with open(filename, 'r', encoding='utf-8') as f:
-            json_str = json.loads(f.read())
-        assert isinstance(json_str, list), f'Wrong json format! {json_str}'
-        # for _ in json_str:
-        #     assert isinstance(_, dict) and len(_) == 1, f'Wrong json format! {_}'
-        #     name = list(_)[0]
-        #     regex = _[name]
-        #     assert isinstance(name, str), f'Wrong json format! {_}'
-        #     assert isinstance(regex, str), f'Wrong json format! {_}'
-        #     try:
-        #         re.compile(regex)
-        #     except re.error:
-        #         assert False, f'Wrong regex! {regex}'
-        #
-        #     _r.append(SentExt(name, regex))
+            json_obj = json.loads(f.read())
+        assert isinstance(json_obj, list), f'Wrong json format! {json_obj}'
 
-        return json_str
+        return json_obj
 
     return __r
 
@@ -61,12 +48,9 @@ def load_blk_ext_from_json_generator(filename: str) -> Callable[[], list]:
     def __r():
         _r = []
         with open(filename, 'r', encoding='utf-8') as f:
-            json_str = json.loads(f.read())
-        assert isinstance(json_str, list), f'Wrong json format! Expect a list but get {json_str}'
-        # for _ in json_str:
-        #     assert isinstance(_, dict), f'Wrong json format! Expect a dict but get {_}'
-        #     _r.append(BlkExt(_))
+            json_obj = json.loads(f.read())
+        assert isinstance(json_obj, list), f'Wrong json format! Expect a list but get {json_obj}'
 
-        return _r
+        return json_obj
 
     return __r
