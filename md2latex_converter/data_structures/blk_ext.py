@@ -224,3 +224,12 @@ class BlkExt:
 
         EXTENDED_NAME_BLOCK_MAP[self.name] = self.generated_blk
         EXTENDED_PREFIX_BLOCK_MAP[self.identification.prefix] = self.generated_blk
+
+
+def register(json_str: list):
+    _r = []
+    for _ in json_str:
+        assert isinstance(_, dict), f'Wrong json format! Expect a dict but get {_}'
+        _r.append(BlkExt(_))
+
+    return _r

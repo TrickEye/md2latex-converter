@@ -1,11 +1,7 @@
 import json
-import re
 
 import pyperclip
 from typing import Callable
-
-from md2latex_converter.data_structures.blk_ext import BlkExt
-from md2latex_converter.data_structures.extensions import SentExt
 
 
 def read_from_file_generator(filename: str) -> Callable[[], str]:
@@ -37,50 +33,40 @@ def write_to_stdout(s) -> None:
     print(s)
 
 
-def load_extension_from_json_generator(filename: str) -> Callable[[], list[SentExt]]:
+def load_sent_ext_from_json_generator(filename: str) -> Callable[[], list]:
     def __r():
-        _r = []
+        # _r = []
         with open(filename, 'r', encoding='utf-8') as f:
             json_str = json.loads(f.read())
         assert isinstance(json_str, list), f'Wrong json format! {json_str}'
-        for _ in json_str:
-            assert isinstance(_, dict) and len(_) == 1, f'Wrong json format! {_}'
-            name = list(_)[0]
-            regex = _[name]
-            assert isinstance(name, str), f'Wrong json format! {_}'
-            assert isinstance(regex, str), f'Wrong json format! {_}'
-            try:
-                re.compile(regex)
-            except re.error:
-                assert False, f'Wrong regex! {regex}'
+        # for _ in json_str:
+        #     assert isinstance(_, dict) and len(_) == 1, f'Wrong json format! {_}'
+        #     name = list(_)[0]
+        #     regex = _[name]
+        #     assert isinstance(name, str), f'Wrong json format! {_}'
+        #     assert isinstance(regex, str), f'Wrong json format! {_}'
+        #     try:
+        #         re.compile(regex)
+        #     except re.error:
+        #         assert False, f'Wrong regex! {regex}'
+        #
+        #     _r.append(SentExt(name, regex))
 
-            _r.append(SentExt(name, regex))
-
-        return _r
+        return json_str
 
     return __r
 
 
-def load_blk_extension_from_json_generator(filename: str) -> Callable[[], list[BlkExt]]:
+def load_blk_ext_from_json_generator(filename: str) -> Callable[[], list]:
     def __r():
         _r = []
         with open(filename, 'r', encoding='utf-8') as f:
             json_str = json.loads(f.read())
         assert isinstance(json_str, list), f'Wrong json format! Expect a list but get {json_str}'
-        for _ in json_str:
-            assert isinstance(_, dict), f'Wrong json format! Expect a dict but get {_}'
-            _r.append(BlkExt(_))
+        # for _ in json_str:
+        #     assert isinstance(_, dict), f'Wrong json format! Expect a dict but get {_}'
+        #     _r.append(BlkExt(_))
 
         return _r
 
     return __r
-
-
-if __name__ == '__main__':
-    handler1 = load_extension_from_json_generator(
-        r'D:\OneDrive\Study\TimeNotSpecified\python\md2latex\md2latex_converter\data_structures\sentence_extensions.json'
-    )
-    sent_exts = handler1()
-    handler = load_blk_extension_from_json_generator(
-        r'D:\OneDrive\Study\TimeNotSpecified\python\md2latex\md2latex_converter\data_structures\block_extensions.json')
-    blk_exts = handler()

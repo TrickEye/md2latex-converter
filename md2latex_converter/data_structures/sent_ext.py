@@ -82,3 +82,21 @@ class SentExt:
 
     def __str__(self):
         return f'{self.identifier}: <{self.regex}>'
+
+
+def register(json_obj: list):
+    _r = []
+    for _ in json_obj:
+        assert isinstance(_, dict) and len(_) == 1, f'Wrong json format! {_}'
+        name = list(_)[0]
+        regex = _[name]
+        assert isinstance(name, str), f'Wrong json format! {_}'
+        assert isinstance(regex, str), f'Wrong json format! {_}'
+        try:
+            re.compile(regex)
+        except re.error:
+            assert False, f'Wrong regex! {regex}'
+
+        _r.append(SentExt(name, regex))
+
+    return _r

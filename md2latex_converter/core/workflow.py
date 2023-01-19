@@ -3,6 +3,7 @@ from typing import Callable
 from md2latex_converter.core import sentence_parser
 from md2latex_converter.core.tokenizer import Tokenizer
 from md2latex_converter.data_structures.blocks import Document
+from md2latex_converter.data_structures import sent_ext, blk_ext
 
 
 def worker_generator(
@@ -12,10 +13,12 @@ def worker_generator(
         consumers: list[Callable[[str], None]]
 ) -> Callable[[], None]:
     def _r():
-        sent_ext = sent_ext_handler()
-        blk_ext = blk_ext_handler()
-        src = provider()
+        sent_ext_src = sent_ext_handler()
+        sent_ext.register(sent_ext_src)
+        blk_ext_src = blk_ext_handler()
+        blk_ext.register(blk_ext_src)
 
+        src = provider()
         sentence_list = sentence_parser.lex(src)
         tokenizer = Tokenizer(sentence_list)
         document = Document.parse(tokenizer)

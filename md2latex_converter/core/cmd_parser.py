@@ -124,7 +124,7 @@ class Cmd:
     def _sent_extension_handler(self) -> Callable[[], list]:
         from md2latex_converter.core import io_handler
         if self.extension_filename is not None and self.extension_filename != '':
-            return io_handler.load_extension_from_json_generator(self.extension_filename)
+            return io_handler.load_sent_ext_from_json_generator(self.extension_filename)
         else:
             return lambda: []
 
@@ -132,7 +132,7 @@ class Cmd:
     def _blk_extension_handler(self) -> Callable[[], list]:
         from md2latex_converter.core import io_handler
         if self.blk_ext_filename is not None and self.blk_ext_filename != '':
-            return io_handler.load_blk_extension_from_json_generator(self.blk_ext_filename)
+            return io_handler.load_blk_ext_from_json_generator(self.blk_ext_filename)
         else:
             return lambda: []
 
