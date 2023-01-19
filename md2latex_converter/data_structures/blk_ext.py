@@ -142,6 +142,15 @@ class _ToTexify(_ToLaTeX):
         return texify(located.content)
 
 
+class _ToLiteral(_ToLaTeX):
+    def __init__(self):
+        super().__init__()
+
+    def toLaTeX(self, located) -> str:
+        assert isinstance(located, Sentence), f'wrong toLaTeX! Want to texify a non-string! {located}'
+        return located.content
+
+
 def factory(commands: list) -> list[_ToLaTeX]:
     ret = []
     for command in commands:
@@ -173,6 +182,10 @@ def factory(commands: list) -> list[_ToLaTeX]:
                 ret.append(_ToForeach(to_latex))
             elif method == 'texify':
                 ret.append(_ToTexify())
+            elif method == 'literal':
+                ret.append(_ToLiteral())
+            else:
+                assert False, f'Bad method! {method}'
     return ret
 
 
@@ -214,8 +227,30 @@ class BlkExt:
                 return ExtendedBlk(parsed)
 
             def toLaTeX(self) -> list[tuple[int, str]]:
-                ret = 0, ''.join([_.toLaTeX(self.parsed) for _ in to_latex])
-                return [ret]
+                target = ''.join([_.toLaTeX(self.parsed) for _ in to_latex])
+
+                ret = []
+                indent = 0
+                buffer = ''
+                newline = True
+                for _ in target:
+                    if newline and _ == '\t':
+                        indent += 1
+                        continue
+
+                    if _ == '\n':
+                        ret.append((indent, buffer))
+                        indent = 0
+                        buffer = ''
+                        newline = True
+                        continue
+
+                    newline = False
+                    buffer += _
+
+                ret.append((indent, buffer))
+
+                return ret
 
             def __str__(self):
                 return self.toLaTeX()[0]

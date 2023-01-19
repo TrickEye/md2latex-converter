@@ -1,3 +1,4 @@
+import sys
 from typing import Type
 
 from md2latex_converter.core.inline import texify
@@ -27,6 +28,11 @@ class Document(Block):
         return Document(components)
 
     def toLaTeX(self) -> list[tuple[int, str]]:
+        declarations = [
+            (0, f'% Powered by markdown2latex-converter'),
+            (0, f'% Invoked by command: {sys.argv}')
+        ]
+
         document_class: tuple[int, str] = (0, r'\documentclass{ctexart}')
 
         used_packages: list[tuple[int, str]] = [
@@ -37,9 +43,12 @@ class Document(Block):
         title_candidates: list[Component] = list(
             filter(lambda c: isinstance(c, TitleBlock) and c.title.hierarchy == 1, self.components))
 
-        candidate0 = title_candidates[0]
-        assert isinstance(candidate0, TitleBlock)
-        title_string: str = candidate0.title.title_name if len(title_candidates) == 1 else 'Your title for the article!'
+        if len(title_candidates) == 1:
+            candidate0 = title_candidates[0]
+            assert isinstance(candidate0, TitleBlock)
+            title_string: str = candidate0.title.title_name
+        else:
+            title_string = 'Your title for the article!'
 
         title_decl: tuple[int, str] = (0, r'\title{' + texify(title_string) + '}')
 
@@ -50,15 +59,19 @@ class Document(Block):
         components_latex: list[tuple[int, str]] = \
             [_ for component in self.components for _ in [*component.toLaTeX(), (0, '')]]
 
+        indented_components_latex = \
+            [(indent + 1, content) for indent, content in components_latex]
+
         document_end: tuple[int, str] = (0, r'\end{document}')
 
         return [
+            *declarations,
             document_class,
             *used_packages,
             title_decl,
             document_begin,
             make_title,
-            *components_latex,
+            *indented_components_latex,
             document_end
         ]
 
@@ -122,7 +135,7 @@ class TitleBlock(Component):
             return []
         else:
             label: str = TitleBlock.labels[self.title.hierarchy]
-            return [(1, '\\' + label + '{' + texify(self.title.title_name) + '}')]
+            return [(0, '\\' + label + '{' + texify(self.title.title_name) + '}')]
 
 
 class PlainText(Component):
@@ -149,7 +162,7 @@ class PlainText(Component):
         return PlainText(texts)
 
     def toLaTeX(self) -> list[tuple[int, str]]:
-        return [(1, ' '.join([texify(text.content.strip()) for text in self.texts]))]
+        return [(0, ' '.join([texify(text.content.strip()) for text in self.texts]))]
 
 
 class ULBlock(Component):
@@ -182,14 +195,14 @@ class ULBlock(Component):
         return ULBlock(listitems)
 
     def toLaTeX(self) -> list[tuple[int, str]]:
-        indent = 1
+        indent = 0
 
         spans: set[int] = set([_[0].whitespace_span for _ in self.listitems])
         spans: list[int] = list(spans)
         spans.sort()
         hierarchies: list[int] = [spans.index(_[0].whitespace_span) for _ in self.listitems]
 
-        ret: list[tuple[int, str]] = [(1, r'\begin{itemize}')]
+        ret: list[tuple[int, str]] = [(0, r'\begin{itemize}')]
         cur: list[int] = [0]
         for _ in range(len(self.listitems)):
             if cur[-1] == hierarchies[_]:
@@ -215,7 +228,7 @@ class ULBlock(Component):
             cur.pop()
             ret.append((indent, r'\end{itemize}'))
             indent -= 1
-        ret.append((1, r'\end{itemize}'))
+        ret.append((0, r'\end{itemize}'))
 
         return ret
 
@@ -250,14 +263,14 @@ class OLBlock(Component):
         return OLBlock(listitems)
 
     def toLaTeX(self) -> list[tuple[int, str]]:
-        indent = 1
+        indent = 0
 
         spans: set[int] = set([_[0].whitespace_span for _ in self.listitems])
         spans: list[int] = list(spans)
         spans.sort()
         hierarchies: list[int] = [spans.index(_[0].whitespace_span) for _ in self.listitems]
 
-        ret: list[tuple[int, str]] = [(1, '\\begin{enumerate}')]
+        ret: list[tuple[int, str]] = [(0, '\\begin{enumerate}')]
         cur: list[int] = [0]
         for _ in range(len(self.listitems)):
             if cur[-1] == hierarchies[_]:
@@ -283,7 +296,7 @@ class OLBlock(Component):
             cur.pop()
             ret.append((indent, '\\end{enumerate}'))
             indent -= 1
-        ret.append((1, '\\end{enumerate}'))
+        ret.append((0, '\\end{enumerate}'))
 
         return ret
 
@@ -311,11 +324,11 @@ class PictureImportation(Component):
 
     def toLaTeX(self) -> list[tuple[int, str]]:
         ret: list[tuple[int, str]] = []
-        ret.append((1, r'\begin{figure}'))
-        ret.append((2, r'\includegraphics{' + self.picture.path_to_pic + '}'))
+        ret.append((0, r'\begin{figure}'))
+        ret.append((1, r'\includegraphics{' + self.picture.path_to_pic + '}'))
         if self.picture.alt_text is not None and self.picture.alt_text != '':
-            ret.append((2, r'\caption{' + self.picture.alt_text + '}'))
-        ret.append((1, r'\end{figure}'))
+            ret.append((1, r'\caption{' + self.picture.alt_text + '}'))
+        ret.append((0, r'\end{figure}'))
         return ret
 
 

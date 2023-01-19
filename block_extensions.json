@@ -8,16 +8,14 @@
       }
     ],
     "toLaTeX": [
-      "\n",
-      "\\noindent\\rule{\\textwidth}{1pt}",
-      "\n"
+      "\\noindent\\rule{\\textwidth}{1pt}"
     ]
   },
   {
-    "name": "CodeBlock",
+    "name": "Equation",
     "identification": [
       {
-        "sentence": "Code",
+        "sentence": "Equation",
         "occurrence": "1"
       },
       {
@@ -25,13 +23,13 @@
         "occurrence": "*"
       },
       {
-        "sentence": "Code",
+        "sentence": "Equation",
         "occurrence": "1"
       }
     ],
     "toLaTeX": [
+      "$$",
       "\n",
-      "\\begin{texttt}",
       {
         "method": "ref",
         "ref_id": 1,
@@ -40,13 +38,14 @@
             "method": "foreach",
             "toLaTeX": [
               {
-                "method": "texify"
-              }
+                "method": "literal"
+              },
+              "\n"
             ]
           }
         ]
       },
-      "\\end{texttt}"
+      "$$"
     ]
   }
 ]
