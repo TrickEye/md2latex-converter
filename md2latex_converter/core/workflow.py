@@ -6,12 +6,14 @@ from md2latex_converter.data_structures.blocks import Document
 
 
 def worker_generator(
-        extension_handler: Callable[[], list],
+        sent_ext_handler: Callable[[], list],
+        blk_ext_handler: Callable[[], list],
         provider: Callable[[], str],
         consumers: list[Callable[[str], None]]
 ) -> Callable[[], None]:
     def _r():
-        ext = extension_handler()
+        sent_ext = sent_ext_handler()
+        blk_ext = blk_ext_handler()
         src = provider()
 
         sentence_list = sentence_parser.lex(src)

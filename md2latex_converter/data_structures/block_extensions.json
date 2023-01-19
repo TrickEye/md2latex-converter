@@ -1,0 +1,51 @@
+[
+  {
+    "name": "SingleLine",
+    "identification": [
+      {
+        "sentence": "Line",
+        "occurrence": "1"
+      }
+    ],
+    "toLaTeX": [
+      "\n",
+      "\\noindent\\rule{\\textwidth}{1pt}"
+    ]
+  },
+  {
+    "name": "CodeBlock",
+    "identification": [
+      {
+        "sentence": "Code",
+        "occurrence": "1"
+      },
+      {
+        "sentence": "Text",
+        "occurrence": "*"
+      },
+      {
+        "sentence": "Code",
+        "occurrence": "1"
+      }
+    ],
+    "toLaTeX": [
+      "\n",
+      "\\begin{texttt}",
+      {
+        "method": "ref",
+        "ref_id": 1,
+        "toLaTeX": [
+          {
+            "method": "foreach",
+            "toLaTeX": [
+              {
+                "method": "texify"
+              }
+            ]
+          }
+        ]
+      },
+      "\\end{texttt}"
+    ]
+  }
+]

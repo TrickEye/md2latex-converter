@@ -1,5 +1,8 @@
+from typing import Type
+
 from md2latex_converter.core.tokenizer import Tokenizer
 from md2latex_converter.core.inline import texify
+from md2latex_converter.data_structures.runtime_maps import EXTENDED_PREFIX_BLOCK_MAP
 from md2latex_converter.data_structures.prototypes import Block
 from md2latex_converter.data_structures.sentences import *
 
@@ -52,11 +55,11 @@ class Document(Block):
 
         return [
             document_class,
-            * used_packages,
+            *used_packages,
             title_decl,
             document_begin,
             make_title,
-            * components_latex,
+            *components_latex,
             document_end
         ]
 
@@ -79,6 +82,8 @@ class Component(Block):
             return None
         elif isinstance(tokenizer.peek, Picture):
             return PictureImportation.parse(tokenizer)
+        elif type(tokenizer.peek) in EXTENDED_PREFIX_BLOCK_MAP:
+            return EXTENDED_PREFIX_BLOCK_MAP[type(tokenizer.peek)].parse(tokenizer)
         else:
             assert False, f'm2l did not support this sentence type {type(tokenizer.peek)}'
 
@@ -313,3 +318,23 @@ class PictureImportation(Component):
             ret.append((2, r'\caption{' + self.picture.alt_text + '}'))
         ret.append((1, r'\end{figure}'))
         return ret
+
+
+BUILTIN_BLOCKS_NAME_MAP: dict[str, Type[Block]] = {
+    'Component': Component,
+    'Document': Document,
+    'TitleBlock': TitleBlock,
+    'OLBlock': OLBlock,
+    'ULBlock': ULBlock,
+    'PlainText': PlainText,
+    'PictureImportation': PictureImportation,
+}
+
+BUILTIN_PREFIX_NAME_MAP: dict[type, Type[Component]] = {
+    Title: TitleBlock,
+    OrderedList: OLBlock,
+    UnorderedList: ULBlock,
+    Text: PlainText,
+    Picture: PictureImportation,
+    EmptySentence: None
+}

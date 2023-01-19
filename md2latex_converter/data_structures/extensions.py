@@ -1,7 +1,9 @@
 import re
 
 from md2latex_converter.data_structures.prototypes import Sentence
+from md2latex_converter.data_structures.sentences import BUILTIN_SENTENCES
 
+EXTENDED_SENTENCES = set()
 
 class SentExt:
     """
@@ -49,7 +51,7 @@ class SentExt:
 
                 self.recorded_dict['lang'] = match.groupdict()['lang']
     """
-    name_map: dict[str, type] = dict()
+    name_map: dict[str, type[Sentence]] = dict()
     regex_map: dict[str, type] = dict()
 
     identifier: str
@@ -58,7 +60,7 @@ class SentExt:
 
     def __init__(self, name: str, regex: str):
         assert name not in SentExt.name_map.keys(), f'Name {name} is already used!'
-        assert name not in ['Title', 'Text', 'EmptySentence', 'UnorderedList', 'OrderedList', 'EOF', 'Picture'], f'choose another name please.'
+        assert name not in BUILTIN_SENTENCES, f'choose another name please.'
 
         self.identifier = name
         self.regex = regex
@@ -79,3 +81,4 @@ class SentExt:
 
         SentExt.name_map[name] = GeneratedClass
         SentExt.regex_map[regex] = GeneratedClass
+        EXTENDED_SENTENCES.add(name)

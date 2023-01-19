@@ -71,3 +71,14 @@ class Picture(Sentence):
         match = re.match('!\[(.*)]\((.*)\)', content)
         self.alt_text = match.group(1)
         self.path_to_pic = match.group(2)
+
+
+BUILTIN_SENTENCES = ['Title', 'Text', 'EmptySentence', 'UnorderedList', 'OrderedList', 'EOF', 'Picture']
+BUILTIN_SENTENCES_MAP = {
+    'Title': Title,
+    'Text': Text,
+    'EmptySentence': EmptySentence,
+    'UnorderedList': UnorderedList,
+    'OrderedList': OrderedList,
+    'EOF': Eof
+}

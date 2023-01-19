@@ -2,7 +2,6 @@ import os
 import sys
 from typing import Callable, List
 
-
 from md2latex_converter.core.configure_handler import config
 from md2latex_converter.core.helpme_handler import handler
 from md2latex_converter.core.workflow import worker_generator
@@ -30,11 +29,14 @@ class Cmd:
                  configure: bool,
                  help_me: bool,
                  output_to_stdout: bool,
-                 extension_filename: str = ''
+                 extension_filename: str = '',
+                 blk_ext_filename: str = ''
                  ):
-        assert not (configure and (input_filename or output_filename or input_from_pastebin or help_me or output_to_stdout or extension_filename)), \
+        assert not (configure and (
+                    input_filename or output_filename or input_from_pastebin or help_me or output_to_stdout or extension_filename or blk_ext_filename)), \
             '"m2l configure" does not accept other arguments.'
-        assert not (help_me and (input_filename or output_filename or input_from_pastebin or configure or output_to_stdout or extension_filename)), \
+        assert not (help_me and (
+                    input_filename or output_filename or input_from_pastebin or configure or output_to_stdout or extension_filename or blk_ext_filename)), \
             '"m2l help" does not accept other arguments.'
         assert not (input_filename and input_from_pastebin), \
             '"m2l" does not support multiple sources of input.'
@@ -47,8 +49,8 @@ class Cmd:
             _warn_ifnot(input_filename.endswith('.md'),
                         f'input file name {input_filename} does not seem to be a MarkDown file.')
 
-            if extension_filename is not None or extension_filename != '':
-                assert extension_filename.endswith('.json'), f'extension should be a json file!'
+            if extension_filename is not None and extension_filename != '':
+                assert extension_filename.endswith('.json'), f'extension {extension_filename} should be a json file!'
 
             if output_filename is None or output_filename == '':
                 output_filename = os.path.basename(input_filename)
@@ -70,9 +72,10 @@ class Cmd:
                     from tkinter import filedialog
                     output_filename = filedialog.asksaveasfilename()
                 except ImportError:
+                    filedialog = None  # to supress pycharm warnings
                     output_filename = input('Please provide a filename, or cancel by pressing ENTER:')
 
-            if extension_filename is not None or extension_filename != '':
+            if extension_filename is not None and extension_filename != '':
                 assert extension_filename.endswith('.json'), f'extension should be a json file!'
 
             if output_filename is not None and output_filename != '':
@@ -90,13 +93,19 @@ class Cmd:
         self.help_me = help_me
         self.output_to_stdout = output_to_stdout
         self.extension_filename = extension_filename
+        self.blk_ext_filename = blk_ext_filename
 
         if self.configure:
             self.handler = config
         elif self.help_me:
             self.handler = handler
         else:
-            self.handler = worker_generator(self._extension_handler, self._provider, self._consumer)
+            self.handler = worker_generator(
+                self._sent_extension_handler,
+                self._blk_extension_handler,
+                self._provider,
+                self._consumer
+            )
 
     def __str__(self):
         if self.configure:
@@ -112,10 +121,18 @@ class Cmd:
                 return f'm2l -pb -o {self.output_filename}'
 
     @property
-    def _extension_handler(self) -> Callable[[], list]:
+    def _sent_extension_handler(self) -> Callable[[], list]:
         from md2latex_converter.core import io_handler
         if self.extension_filename is not None and self.extension_filename != '':
             return io_handler.load_extension_from_json_generator(self.extension_filename)
+        else:
+            return lambda: []
+
+    @property
+    def _blk_extension_handler(self) -> Callable[[], list]:
+        from md2latex_converter.core import io_handler
+        if self.blk_ext_filename is not None and self.blk_ext_filename != '':
+            return io_handler.load_blk_extension_from_json_generator(self.blk_ext_filename)
         else:
             return lambda: []
 
@@ -189,3 +206,16 @@ def _parse_command(args) -> Cmd:
         help_me,
         output_to_stdout
     )
+
+
+if __name__ == '__main__':
+    cmd = Cmd(r'D:\OneDrive\Study\TimeNotSpecified\python\md2latex\README.md',
+              r'D:\OneDrive\Study\TimeNotSpecified\python\md2latex\README1.tex',
+              input_from_pastebin=False,
+              configure=False,
+              help_me=False,
+              output_to_stdout=False,
+              extension_filename=r'D:\OneDrive\Study\TimeNotSpecified\python\md2latex\md2latex_converter\data_structures\sentence_extensions.json',
+              blk_ext_filename=r'D:\OneDrive\Study\TimeNotSpecified\python\md2latex\md2latex_converter\data_structures\block_extensions.json')
+
+    cmd.handler()
