@@ -1,17 +1,14 @@
-from typing import Type
-
 from md2latex_converter.core.inline import texify
-from md2latex_converter.core.tokenizer import Tokenizer
-from md2latex_converter.data_structures.blocks import Component, BUILTIN_BLOCKS_NAME_MAP, BUILTIN_PREFIX_NAME_MAP
-from md2latex_converter.data_structures.extensions import SentExt
+from md2latex_converter.data_structures.blocks import Component, BUILTIN_NAME_BLOCK_MAP, BUILTIN_PREFIX_BLOCK_MAP
 from md2latex_converter.data_structures.prototypes import Sentence
-from md2latex_converter.data_structures.runtime_maps import EXTENDED_PREFIX_BLOCK_MAP
+from md2latex_converter.data_structures.runtime_maps import EXTENDED_PREFIX_BLOCK_MAP, EXTENDED_NAME_SENTENCE_MAP, \
+    EXTENDED_NAME_BLOCK_MAP
 from md2latex_converter.data_structures.sentences import BUILTIN_SENTENCES_MAP
 
 
 class _Identification:
     mapped: type[Sentence]
-    compositions: list[tuple[str, str, type]]
+    compositions: list[tuple[str, str, type[Sentence]]]
 
     def __init__(self, compositions: list[dict]):
         self.compositions = []
@@ -27,8 +24,8 @@ class _Identification:
 
             if name in BUILTIN_SENTENCES_MAP:
                 self.compositions.append((name, occurrence, BUILTIN_SENTENCES_MAP[name]))
-            elif name in SentExt.name_map:
-                self.compositions.append((name, occurrence, SentExt.name_map[name]))
+            elif name in EXTENDED_NAME_SENTENCE_MAP:
+                self.compositions.append((name, occurrence, EXTENDED_NAME_SENTENCE_MAP[name]))
             elif name == 'Sentence':
                 self.compositions.append((name, occurrence, Sentence))
             else:
@@ -37,10 +34,10 @@ class _Identification:
             assert self.compositions[0][2] != Sentence, f'Cannot expect "Sentence" at start of identification!'
 
     @property
-    def prefix(self) -> type:
+    def prefix(self) -> type[Sentence]:
         return self.compositions[0][2]
 
-    def parse(self, tokenizer: Tokenizer):
+    def parse(self, tokenizer):
         ret = []
         for name, occurrence, stype in self.compositions:
             assert occurrence in ['1', '*', '+'], f'occurrence should be among "1", "*", "+". Reading {occurrence}'
@@ -179,29 +176,26 @@ def factory(commands: list) -> list[_ToLaTeX]:
     return ret
 
 
-EXTENDED_BLOCK_NAME_MAP: dict[str, Type[Component]] = dict()
-
-
 class BlkExt:
     name: str
     identification: _Identification
     toLaTeX: list[_ToLaTeX]
 
-    # name_map: dict[str, type] = dict()
-
     def __init__(self, obj: dict):
         assert 'name' in obj, f'missing name! {obj}'
         assert isinstance(obj['name'], str)
         self.name = name = obj['name']
-        assert self.name not in BUILTIN_BLOCKS_NAME_MAP, f'choose another name please!'
-        assert self.name not in EXTENDED_BLOCK_NAME_MAP, f'choose another name please!'
+        assert self.name not in BUILTIN_NAME_BLOCK_MAP, f'choose another name please!'
+        assert self.name not in EXTENDED_NAME_BLOCK_MAP, f'choose another name please!'
 
         assert 'identification' in obj, f'missing identification! {obj}'
         self.identification_obj = obj['identification']
         assert isinstance(self.identification_obj, list)
         self.identification = identification = _Identification(self.identification_obj)
-        assert self.identification.prefix not in BUILTIN_PREFIX_NAME_MAP, f'duplicate prefix {self.identification.prefix.identifier}'
-        assert self.identification.prefix not in EXTENDED_PREFIX_BLOCK_MAP, f'duplicate prefix {self.identification.prefix.identifier}'
+        assert self.identification.prefix not in BUILTIN_PREFIX_BLOCK_MAP, \
+            f'duplicate prefix {self.identification.prefix.identifier}'
+        assert self.identification.prefix not in EXTENDED_PREFIX_BLOCK_MAP, \
+            f'duplicate prefix {self.identification.prefix.identifier}'
 
         assert 'toLaTeX' in obj, f'missing toLaTeX! {obj}'
         self.toLaTeX_obj = obj['toLaTeX']
@@ -210,6 +204,7 @@ class BlkExt:
 
         class ExtendedBlk(Component):
             block_name = name
+
             def __init__(self, parsed: list):
                 self.parsed = parsed
 
@@ -222,8 +217,10 @@ class BlkExt:
                 ret = 0, ''.join([_.toLaTeX(self.parsed) for _ in to_latex])
                 return [ret]
 
+            def __str__(self):
+                return self.toLaTeX()[0]
+
         self.generated_blk = ExtendedBlk
 
-        EXTENDED_BLOCK_NAME_MAP[self.name] = self.generated_blk
+        EXTENDED_NAME_BLOCK_MAP[self.name] = self.generated_blk
         EXTENDED_PREFIX_BLOCK_MAP[self.identification.prefix] = self.generated_blk
-

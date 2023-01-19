@@ -1,9 +1,9 @@
 import re
 
 from md2latex_converter.data_structures.prototypes import Sentence
+from md2latex_converter.data_structures.runtime_maps import EXTENDED_NAME_SENTENCE_MAP, EXTENDED_REGEX_SENTENCE_MAP
 from md2latex_converter.data_structures.sentences import BUILTIN_SENTENCES
 
-EXTENDED_SENTENCES = set()
 
 class SentExt:
     """
@@ -51,23 +51,21 @@ class SentExt:
 
                 self.recorded_dict['lang'] = match.groupdict()['lang']
     """
-    name_map: dict[str, type[Sentence]] = dict()
-    regex_map: dict[str, type] = dict()
 
     identifier: str
     regex: str
     generated_type: type
 
     def __init__(self, name: str, regex: str):
-        assert name not in SentExt.name_map.keys(), f'Name {name} is already used!'
-        assert name not in BUILTIN_SENTENCES, f'choose another name please.'
+        assert name not in BUILTIN_SENTENCES, f'Name {name} is already used!'
+        assert name not in EXTENDED_NAME_SENTENCE_MAP, f'Name {name} is already used!'
 
         self.identifier = name
         self.regex = regex
         self.pattern = re.compile(regex)
         self.recorded_names = list(self.pattern.groupindex.keys())
 
-        class GeneratedClass(Sentence):
+        class SentExtInstance(Sentence):
             recoded_dict: dict[str, str]
             _name = name
             _recoded_names = self.recorded_names
@@ -77,8 +75,10 @@ class SentExt:
                 super().__init__(line, name, content)
                 self.recoded_dict = match.groupdict()
 
-        self.generated_type = GeneratedClass
+        self.generated_type = SentExtInstance
 
-        SentExt.name_map[name] = GeneratedClass
-        SentExt.regex_map[regex] = GeneratedClass
-        EXTENDED_SENTENCES.add(name)
+        EXTENDED_NAME_SENTENCE_MAP[name] = SentExtInstance
+        EXTENDED_REGEX_SENTENCE_MAP[regex] = SentExtInstance
+
+    def __str__(self):
+        return f'{self.identifier}: <{self.regex}>'

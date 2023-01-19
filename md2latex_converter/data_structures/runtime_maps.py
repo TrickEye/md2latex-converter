@@ -1,5 +1,5 @@
-from typing import Type
+EXTENDED_PREFIX_BLOCK_MAP = dict()
+EXTENDED_NAME_BLOCK_MAP = dict()
 
-from md2latex_converter.data_structures.prototypes import Block
-
-EXTENDED_PREFIX_BLOCK_MAP: dict[type, Type[Block]] = dict()
+EXTENDED_NAME_SENTENCE_MAP = dict()
+EXTENDED_REGEX_SENTENCE_MAP = dict()

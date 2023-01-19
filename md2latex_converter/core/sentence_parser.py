@@ -1,4 +1,4 @@
-from md2latex_converter.data_structures.extensions import SentExt
+from md2latex_converter.data_structures.runtime_maps import EXTENDED_REGEX_SENTENCE_MAP
 from md2latex_converter.data_structures.sentences import *
 
 
@@ -34,9 +34,10 @@ def lex(input_string: str) -> list[Sentence]:
     input_strings = input_string.split('\n')
     for _ in range(len(input_strings)):
         sentence = input_strings[_]
-        for regex in SentExt.regex_map:
+        for regex in EXTENDED_REGEX_SENTENCE_MAP:
             if re.match(regex, sentence) is not None:
-                ret.append(SentExt.regex_map[regex](_, sentence))
+                sent_type = EXTENDED_REGEX_SENTENCE_MAP[regex]
+                ret.append(sent_type(_, sentence))
                 break
         else:
             if re.match(r'^(#){1,6}\s*(.*)$', sentence) is not None:

@@ -1,6 +1,5 @@
 from typing import Type
 
-from md2latex_converter.core.tokenizer import Tokenizer
 from md2latex_converter.core.inline import texify
 from md2latex_converter.data_structures.runtime_maps import EXTENDED_PREFIX_BLOCK_MAP
 from md2latex_converter.data_structures.prototypes import Block
@@ -16,7 +15,7 @@ class Document(Block):
         self.components = components
 
     @staticmethod
-    def parse(tokenizer: Tokenizer) -> 'Document':
+    def parse(tokenizer) -> 'Document':
         components: list['Component'] = []
 
         while not isinstance(tokenizer.peek, Eof):
@@ -68,7 +67,7 @@ class Component(Block):
     __symbol_name = 'Component'
 
     @staticmethod
-    def parse(tokenizer: Tokenizer):
+    def parse(tokenizer):
         if isinstance(tokenizer.peek, Title):
             return TitleBlock.parse(tokenizer)
         elif isinstance(tokenizer.peek, Text):
@@ -110,7 +109,7 @@ class TitleBlock(Component):
         self.title = title
 
     @staticmethod
-    def parse(tokenizer: Tokenizer) -> 'TitleBlock':
+    def parse(tokenizer) -> 'TitleBlock':
         assert isinstance(tokenizer.peek, Title), f'missing Title in line {tokenizer.line}'
 
         title = tokenizer.peek
@@ -134,7 +133,7 @@ class PlainText(Component):
         self.texts = texts
 
     @staticmethod
-    def parse(tokenizer: Tokenizer):
+    def parse(tokenizer):
         texts: list[Text] = []
 
         assert isinstance(tokenizer.peek, Text), f'missing Text in line {tokenizer.line}'
@@ -162,7 +161,7 @@ class ULBlock(Component):
         self.listitems = listitems
 
     @staticmethod
-    def parse(tokenizer: Tokenizer) -> 'ULBlock':
+    def parse(tokenizer) -> 'ULBlock':
         listitems: list[tuple[UnorderedList, list[Text]]] = []
 
         assert isinstance(tokenizer.peek, UnorderedList), f'missing UnorderedList in line {tokenizer.line}'
@@ -230,7 +229,7 @@ class OLBlock(Component):
         self.listitems = listitems
 
     @staticmethod
-    def parse(tokenizer: Tokenizer) -> 'OLBlock':
+    def parse(tokenizer) -> 'OLBlock':
         listitems: list[tuple[OrderedList, list[Text]]] = []
 
         assert isinstance(tokenizer.peek, OrderedList), f'missing OrderedList in line {tokenizer.line}'
@@ -298,7 +297,7 @@ class PictureImportation(Component):
         self.picture: Picture = picture
 
     @staticmethod
-    def parse(tokenizer: Tokenizer) -> 'PictureImportation':
+    def parse(tokenizer) -> 'PictureImportation':
         assert isinstance(tokenizer.peek, Picture), f'missing Picture in line {tokenizer.line}'
         picture = tokenizer.peek
         tokenizer.next()
@@ -320,7 +319,7 @@ class PictureImportation(Component):
         return ret
 
 
-BUILTIN_BLOCKS_NAME_MAP: dict[str, Type[Block]] = {
+BUILTIN_NAME_BLOCK_MAP: dict[str, Type[Block]] = {
     'Component': Component,
     'Document': Document,
     'TitleBlock': TitleBlock,
@@ -330,7 +329,7 @@ BUILTIN_BLOCKS_NAME_MAP: dict[str, Type[Block]] = {
     'PictureImportation': PictureImportation,
 }
 
-BUILTIN_PREFIX_NAME_MAP: dict[type, Type[Component]] = {
+BUILTIN_PREFIX_BLOCK_MAP: dict[type, Type[Component]] = {
     Title: TitleBlock,
     OrderedList: OLBlock,
     UnorderedList: ULBlock,
